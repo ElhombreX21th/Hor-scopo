@@ -858,9 +858,15 @@
         ];
         const PLAN_ORDER = { basic: 0, premium: 1, vip: 2 };
         const STORAGE_KEY = 'horoscopoSession';
-        const defaultApiBase = window.location.protocol === 'file:' || window.location.port === '8001'
-            ? 'http://127.0.0.1:8000'
-            : window.location.origin;
+        const defaultApiBase = (() => {
+            if (window.location.protocol === 'file:') {
+                return 'http://127.0.0.1:8000';
+            }
+            if (window.location.port === '8001') {
+                return `${window.location.protocol}//${window.location.hostname}:8000`;
+            }
+            return window.location.origin;
+        })();
         const API_BASE_URL = localStorage.getItem('horoscopoApiBase') || defaultApiBase;
 
         let sessao = carregarSessao();
