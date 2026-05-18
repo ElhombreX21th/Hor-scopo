@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -12,6 +13,6 @@ if str(BACKEND_DIR) not in sys.path:
 os.environ.setdefault("APP_NAME", "SeuFuturo")
 os.environ.setdefault("APP_BASE_URL", "https://hypersecit.com.br")
 os.environ.setdefault("ALLOWED_ORIGINS", "https://hypersecit.com.br")
-os.environ.setdefault("HOROSCOPO_RUNTIME_DIR", "/tmp/seufuturo")
+os.environ.setdefault("HOROSCOPO_RUNTIME_DIR", str(Path(tempfile.gettempdir()) / "seufuturo"))
 
 from main import app  # noqa: E402

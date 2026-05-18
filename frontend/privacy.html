@@ -64,10 +64,30 @@
   </div>
 
   <script>
+    const isLoopbackHost = (host) => !host || host === 'localhost' || host.startsWith('127.');
+    const isLocalFrontend = ['file:', 'http:'].includes(window.location.protocol)
+      && isLoopbackHost(window.location.hostname);
     const defaultApiBase = window.location.protocol === 'file:' || window.location.port === '8001'
-      ? 'http://127.0.0.1:8000'
+      ? ''
       : window.location.origin;
-    const API_BASE_URL = localStorage.getItem('horoscopoApiBase') || defaultApiBase;
+    const storedApiBase = localStorage.getItem('horoscopoApiBase');
+    const API_BASE_URL = (() => {
+      if (!storedApiBase) return defaultApiBase;
+      if (isLocalFrontend) return storedApiBase;
+
+      try {
+        const storedHost = new URL(storedApiBase).hostname;
+        if (isLoopbackHost(storedHost)) {
+          localStorage.removeItem('horoscopoApiBase');
+          return defaultApiBase;
+        }
+      } catch (error) {
+        localStorage.removeItem('horoscopoApiBase');
+        return defaultApiBase;
+      }
+
+      return storedApiBase;
+    })();
 
     document.getElementById('lgpdForm').addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -86,7 +106,7 @@
         const data = await resp.json();
         result.textContent = data.message || 'Solicitação enviada.';
       } catch (err) {
-        result.textContent = `Erro ao enviar solicitação para ${API_BASE_URL}.`;
+        result.textContent = 'Não foi possível enviar a solicitação agora. Tente novamente em instantes.';
       }
     });
   </script>

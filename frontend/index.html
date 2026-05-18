@@ -858,16 +858,36 @@
         ];
         const PLAN_ORDER = { basic: 0, premium: 1, vip: 2 };
         const STORAGE_KEY = 'horoscopoSession';
+        const isLoopbackHost = (host) => !host || host === 'localhost' || host.startsWith('127.');
+        const isLocalFrontend = ['file:', 'http:'].includes(window.location.protocol)
+            && isLoopbackHost(window.location.hostname);
         const defaultApiBase = (() => {
             if (window.location.protocol === 'file:') {
-                return 'http://127.0.0.1:8000';
+                return '';
             }
             if (window.location.port === '8001') {
                 return `${window.location.protocol}//${window.location.hostname}:8000`;
             }
             return window.location.origin;
         })();
-        const API_BASE_URL = localStorage.getItem('horoscopoApiBase') || defaultApiBase;
+        const storedApiBase = localStorage.getItem('horoscopoApiBase');
+        const API_BASE_URL = (() => {
+            if (!storedApiBase) return defaultApiBase;
+            if (isLocalFrontend) return storedApiBase;
+
+            try {
+                const storedHost = new URL(storedApiBase).hostname;
+                if (isLoopbackHost(storedHost)) {
+                    localStorage.removeItem('horoscopoApiBase');
+                    return defaultApiBase;
+                }
+            } catch (error) {
+                localStorage.removeItem('horoscopoApiBase');
+                return defaultApiBase;
+            }
+
+            return storedApiBase;
+        })();
 
         let sessao = carregarSessao();
         let signoSelecionado = null;
@@ -1015,6 +1035,50 @@
             document.getElementById('resultadoContent').classList.add('hidden');
         }
 
+        function criarHoroscopoOffline(signo, plano) {
+            if (plano !== 'basic') return null;
+
+            return {
+                signo,
+                plano_consultado: 'basic',
+                previsao_diaria: `Hoje o universo pede calma, foco e uma escolha prática para ${signo}. Mantém a intuição por perto e evita decisões apressadas.`
+            };
+        }
+
+        function renderizarHoroscopo(data) {
+            document.getElementById('resultadoTitulo').textContent = `🔮 ${data.signo}`;
+            document.getElementById('previsaoDiaria').textContent = data.previsao_diaria;
+            document.getElementById('planoBadge').textContent = data.plano_consultado.toUpperCase();
+
+            document.querySelectorAll('.amor-section, .carreira-section, .sorte-section, .conselho-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            if (data.amor) {
+                document.getElementById('amor').textContent = data.amor;
+                document.querySelector('.amor-section').classList.remove('hidden');
+            }
+
+            if (data.carreira) {
+                document.getElementById('carreira').textContent = data.carreira;
+                document.querySelector('.carreira-section').classList.remove('hidden');
+            }
+
+            if (data.dados_da_sorte) {
+                document.getElementById('sorte').textContent = data.dados_da_sorte;
+                document.querySelector('.sorte-section').classList.remove('hidden');
+            }
+
+            if (data.conselho_mistico_vip) {
+                document.getElementById('conselho').textContent = data.conselho_mistico_vip;
+                document.querySelector('.conselho-section').classList.remove('hidden');
+            }
+
+            document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('resultadoContent').classList.remove('hidden');
+        }
+
         async function buscarHoroscopo() {
             if (!signoSelecionado) return;
 
@@ -1054,41 +1118,20 @@
                     throw new Error(data.detail || 'Erro ao buscar horóscopo');
                 }
 
-                document.getElementById('resultadoTitulo').textContent = `🔮 ${data.signo}`;
-                document.getElementById('previsaoDiaria').textContent = data.previsao_diaria;
-                document.getElementById('planoBadge').textContent = data.plano_consultado.toUpperCase();
-
-                document.querySelectorAll('.amor-section, .carreira-section, .sorte-section, .conselho-section').forEach(sec => {
-                    sec.classList.add('hidden');
-                });
-
-                if (data.amor) {
-                    document.getElementById('amor').textContent = data.amor;
-                    document.querySelector('.amor-section').classList.remove('hidden');
-                }
-
-                if (data.carreira) {
-                    document.getElementById('carreira').textContent = data.carreira;
-                    document.querySelector('.carreira-section').classList.remove('hidden');
-                }
-
-                if (data.dados_da_sorte) {
-                    document.getElementById('sorte').textContent = data.dados_da_sorte;
-                    document.querySelector('.sorte-section').classList.remove('hidden');
-                }
-
-                if (data.conselho_mistico_vip) {
-                    document.getElementById('conselho').textContent = data.conselho_mistico_vip;
-                    document.querySelector('.conselho-section').classList.remove('hidden');
-                }
-
-                loadingSpinner.classList.add('hidden');
-                resultadoContent.classList.remove('hidden');
+                renderizarHoroscopo(data);
             } catch (error) {
-                console.error('Erro:', error);
+                const fallback = criarHoroscopoOffline(signoSelecionado, planoSelecionado);
+                if (fallback) {
+                    console.warn('API indisponível, exibindo previsão básica local.', error);
+                    renderizarHoroscopo(fallback);
+                    return;
+                }
+
                 loadingSpinner.classList.add('hidden');
-                errorMessage.classList.remove('hidden');
-                errorMessage.querySelector('p').textContent = `⚠️ Não foi possível carregar a API em ${API_BASE_URL}`;
+                resultadoContent.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+                resultadoContainer.classList.add('hidden');
+                console.error('Erro ao carregar previsão:', error);
             }
         }
 
@@ -1198,13 +1241,12 @@
         // PayPal flow: cria ordem no backend e redireciona para aprovação
         async function startPayPalFromModal() {
             if (!checkoutPlano) return;
-            const info = planoInfo(checkoutPlano);
             try {
                 document.getElementById('checkoutMessage').textContent = 'A criar ordem PayPal...';
                 const res = await apiFetch('/api/paypal/create-order', {
                     method: 'POST',
-                    body: JSON.stringify({ amount: info.valor, currency: 'BRL', return_url: window.location.href, cancel_url: window.location.href })
-                }, false);
+                    body: JSON.stringify({ plano: checkoutPlano, return_url: window.location.href, cancel_url: window.location.href })
+                });
 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Erro PayPal');
@@ -1224,7 +1266,6 @@
         // PIX (Mercado Pago) flow: cria pagamento e mostra QR code
         async function startPixFromModal() {
             if (!checkoutPlano) return;
-            const info = planoInfo(checkoutPlano);
             const pixArea = document.getElementById('pixArea');
             const pixLoading = document.getElementById('pixLoading');
             const pixImage = document.getElementById('pixImage');
@@ -1238,8 +1279,8 @@
             try {
                 const res = await apiFetch('/api/mercadopago/create-pix', {
                     method: 'POST',
-                    body: JSON.stringify({ amount: info.valor })
-                }, false);
+                    body: JSON.stringify({ plano: checkoutPlano })
+                });
 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || 'Erro PIX');

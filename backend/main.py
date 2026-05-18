@@ -7,8 +7,10 @@ import json
 import os
 import secrets
 import sqlite3
+import tempfile
 import unicodedata
 import uuid
+from decimal import Decimal
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 import requests
@@ -31,7 +33,7 @@ if load_dotenv:
 BASE_DIR = os.path.dirname(__file__)
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 IS_VERCEL = os.environ.get("VERCEL") == "1"
-DEFAULT_RUNTIME_DIR = "/tmp/seufuturo" if IS_VERCEL else BASE_DIR
+DEFAULT_RUNTIME_DIR = os.path.join(tempfile.gettempdir(), "seufuturo") if IS_VERCEL else BASE_DIR
 
 
 def resolve_project_path(path: str):
@@ -58,6 +60,7 @@ STRIPE_PRICE_IDS = {
     "premium": os.environ.get("STRIPE_PRICE_PREMIUM", ""),
     "vip": os.environ.get("STRIPE_PRICE_VIP", ""),
 }
+BEARER_AUTH_TYPE = "bearer"
 
 app = FastAPI(title=f"SaaS {APP_NAME}")
 
@@ -89,12 +92,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+}
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    for header, value in SECURITY_HEADERS.items():
+        if header not in response.headers:
+            response.headers[header] = value
+    if request.url.path.startswith("/api/") and "Cache-Control" not in response.headers:
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 # Configuração da API Externa (Exemplo usando uma API pública ou fictícia)
 # Substituirás pelo URL e chaves reais do provedor que escolheres (ex: Horoscope API, Azintro, etc.)
 ASTRO_API_URL = "https://api.vidente-exemplo.com/v1/horoscope"
 API_KEY = os.environ.get("ASTRO_API_KEY", "")
 
 PLANOS_VALIDOS = {"basic": 0, "premium": 1, "vip": 2}
+PLAN_PRICES_BRL = {
+    "premium": "49.90",
+    "vip": "150.00",
+}
 ACTIVE_SUBSCRIPTION_STATUSES = {"active", "trialing"}
 SIGNO_ALIASES = {
     "aries": "aries",
@@ -210,7 +236,7 @@ async def admin_refund(req: AdminRefundModel, authorization: Optional[str] = Hea
         result['error'] = str(e)
 
     # registrar e, se user_id, rebaixar assinatura localmente
-    _append_data_request({"tipo": "admin_refund", "request": req.dict(), "result": result, "timestamp": agora_iso()})
+    _append_data_request({"tipo": "admin_refund", "request": req.model_dump(), "result": result, "timestamp": agora_iso()})
     if user_id:
         downgrade_user_subscription(user_id)
 
@@ -290,6 +316,39 @@ def normalizar_plano(plano: str):
     if plano_normalizado not in PLANOS_VALIDOS:
         raise HTTPException(status_code=400, detail="Plano inválido. Escolha entre basic, premium ou vip.")
     return plano_normalizado
+
+
+def paid_plan_price_brl(plano: str):
+    plano_normalizado = normalizar_plano(plano)
+    if plano_normalizado == "basic":
+        raise HTTPException(status_code=400, detail="Pagamento disponível apenas para Premium ou VIP.")
+    return plano_normalizado, PLAN_PRICES_BRL[plano_normalizado]
+
+
+def record_checkout_session(user_id: str, plano: str, provider: str, provider_session_id: str, checkout_url: Optional[str] = None):
+    session_id = str(uuid.uuid4())
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO checkout_sessions
+                (id, user_id, plano, status, provider, provider_session_id, checkout_url, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (session_id, user_id, plano, "pending", provider, provider_session_id, checkout_url, agora_iso()),
+        )
+    return session_id
+
+
+def parse_payment_reference(reference: Optional[str]):
+    if not reference:
+        return None, None
+    if ":" not in reference:
+        return reference, None
+    user_id, plano = reference.split(":", 1)
+    try:
+        return user_id, normalizar_plano(plano)
+    except HTTPException:
+        return user_id, None
 
 
 def normalizar_signo(signo: str):
@@ -568,36 +627,31 @@ def get_paypal_access_token():
 
 
 class PayPalOrderModel(BaseModel):
-    amount: str
+    plano: str
+    amount: Optional[str] = None
     currency: str = "BRL"
     return_url: Optional[str] = None
     cancel_url: Optional[str] = None
-    plano: Optional[str] = None
 
 
 @app.post("/api/paypal/create-order")
-async def paypal_create_order(req: PayPalOrderModel, authorization: Optional[str] = Header(default=None)):
+async def paypal_create_order(req: PayPalOrderModel, user=Depends(get_current_user)):
     """Cria uma ordem PayPal e retorna links para o cliente aprovar o pagamento.
     O frontend deve redirecionar o utilizador para `approve` link recebido.
     """
+    plano, amount = paid_plan_price_brl(req.plano)
     token = get_paypal_access_token()
     url = f"{_paypal_base()}/v2/checkout/orders"
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     body = {
         "intent": "CAPTURE",
         "purchase_units": [{
-            "amount": {"currency_code": req.currency, "value": req.amount},
+            "amount": {"currency_code": "BRL", "value": amount},
+            "custom_id": user["id"],
+            "reference_id": plano,
+            "description": f"Assinatura SeuFuturo - {plano.upper()}",
         }]
     }
-    # Optional: associate order with a logged-in user and a plan
-    user = get_optional_user(authorization)
-    if user:
-        try:
-            body["purchase_units"][0]["custom_id"] = user["id"]
-            if req.plano:
-                body["purchase_units"][0]["reference_id"] = req.plano
-        except Exception:
-            pass
 
     if req.return_url or req.cancel_url:
         body["application_context"] = {
@@ -610,13 +664,21 @@ async def paypal_create_order(req: PayPalOrderModel, authorization: Optional[str
     try:
         resp = requests.post(url, json=body, headers=headers, timeout=10)
         resp.raise_for_status()
-        return resp.json()
+        data = resp.json()
+        approve_url = None
+        for link in data.get("links", []) or []:
+            if link.get("rel") == "approve":
+                approve_url = link.get("href")
+                break
+        session_id = record_checkout_session(user["id"], plano, "paypal", data.get("id", ""), approve_url)
+        data["session_id"] = session_id
+        return data
     except requests.RequestException:
         raise HTTPException(status_code=502, detail="Falha ao criar ordem PayPal.")
 
 
 @app.post("/api/paypal/capture/{order_id}")
-async def paypal_capture_order(order_id: str):
+async def paypal_capture_order(order_id: str, user=Depends(get_current_user)):
     """Captura uma ordem PayPal (após aprovação do utilizador).
     Retorna o resultado da captura.
     """
@@ -724,48 +786,37 @@ async def paypal_webhook(request: Request):
                         # ordem cancelada/voided -> downgrade
                         downgrade_user_subscription(user_id)
                         logger.info("paypal_order_cancelled: order=%s user=%s status=%s", order_id, user_id, status)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("paypal_webhook_processing_failed: %s", exc)
 
     return {"received": True}
 
 
 class MPCreatePixModel(BaseModel):
-    amount: str
-    currency: str = "BRL"
+    plano: str
+    amount: Optional[str] = None
     email: Optional[EmailStr] = None
 
 
 @app.post("/api/mercadopago/create-pix")
-async def mercadopago_create_pix(req: MPCreatePixModel, authorization: Optional[str] = Header(default=None)):
+async def mercadopago_create_pix(req: MPCreatePixModel, user=Depends(get_current_user)):
     """Cria pagamento PIX via Mercado Pago e devolve dados do QR Code.
     Requer `MP_ACCESS_TOKEN` nas variáveis de ambiente.
     """
+    plano, amount = paid_plan_price_brl(req.plano)
     mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
     if not mp_token:
         raise HTTPException(status_code=503, detail="Mercado Pago não configurado (MP_ACCESS_TOKEN).")
     url = "https://api.mercadopago.com/v1/payments"
     headers = {"Authorization": f"Bearer {mp_token}", "Content-Type": "application/json"}
     body = {
-        "transaction_amount": float(req.amount),
+        "transaction_amount": float(Decimal(amount)),
         "payment_method_id": "pix",
-        "description": "Assinatura SeuFuturo",
+        "description": f"Assinatura SeuFuturo - {plano.upper()}",
+        "external_reference": f"{user['id']}:{plano}",
     }
 
-    # Tenta associar ao utilizador logado
-    user = None
-    try:
-        user = get_optional_user(authorization)
-    except Exception:
-        user = None
-
-    if user:
-        # inclui referência externa para conciliação
-        body["external_reference"] = user["id"]
-        body["description"] = f"Assinatura SeuFuturo - user:{user['id']}"
-
-    if req.email:
-        body["payer"] = {"email": req.email}
+    body["payer"] = {"email": req.email or user["email"]}
 
     try:
         resp = requests.post(url, json=body, headers=headers, timeout=10)
@@ -775,7 +826,11 @@ async def mercadopago_create_pix(req: MPCreatePixModel, authorization: Optional[
         poi = data.get("point_of_interaction", {}) or {}
         transaction_data = poi.get("transaction_data", {}) or {}
 
+        payment_id = str(data.get("id") or "")
+        session_id = record_checkout_session(user["id"], plano, "mercadopago", payment_id)
+
         return {
+            "session_id": session_id,
             "status": data.get("status"),
             "id": data.get("id"),
             "qr_code": transaction_data.get("qr_code"),
@@ -821,15 +876,14 @@ async def mercadopago_webhook(request: Request):
                 payer = pay.get('payer') or {}
                 payer_email = payer.get('email')
 
-                # Se external_reference contém user id, usamos para ligar
-                user_id = external_ref
+                # Se external_reference contém user id e plano, usamos para ligar
+                user_id, referenced_plan = parse_payment_reference(external_ref)
                 if not user_id and payer_email:
                     row = get_user_by_email(payer_email)
                     user_id = row['id'] if row else None
 
                 if user_id and status in {'approved', 'paid'}:
-                    # tenta extrair plano da descrição
-                    plano = 'premium'
+                    plano = referenced_plan or 'premium'
                     if 'VIP' in (description or '').upper():
                         plano = 'vip'
                     set_user_subscription(user_id, plano, 'active')
@@ -838,8 +892,8 @@ async def mercadopago_webhook(request: Request):
                     downgrade_user_subscription(user_id)
                     logger.info("mercadopago_payment_refunded: payment=%s user=%s status=%s", payment_id, user_id, status)
 
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("mercadopago_webhook_processing_failed: %s", exc)
 
     return {"received": True}
 
@@ -1053,7 +1107,7 @@ async def register(req: RegisterModel):
 
     return {
         "access_token": token,
-        "token_type": "bearer",
+        "token_type": BEARER_AUTH_TYPE,
         "user": user_to_payload(user),
     }
 
@@ -1069,7 +1123,7 @@ async def login(req: LoginModel):
 
     return {
         "access_token": token,
-        "token_type": "bearer",
+        "token_type": BEARER_AUTH_TYPE,
         "user": user_to_payload(updated_user),
     }
 
@@ -1077,6 +1131,41 @@ async def login(req: LoginModel):
 @app.get("/api/me")
 async def me(user=Depends(get_current_user)):
     return {"user": user_to_payload(user)}
+
+
+@app.get("/api/me/export")
+async def export_me(user=Depends(get_current_user)):
+    with get_db() as conn:
+        sessions = conn.execute(
+            """
+            SELECT id, plano, status, provider, provider_session_id, created_at, completed_at
+            FROM checkout_sessions
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            """,
+            (user["id"],),
+        ).fetchall()
+
+    return {
+        "user": user_to_payload(user),
+        "checkout_sessions": [dict(row) for row in sessions],
+        "exported_at": agora_iso(),
+    }
+
+
+@app.delete("/api/me")
+async def delete_me(user=Depends(get_current_user)):
+    with get_db() as conn:
+        conn.execute("DELETE FROM checkout_sessions WHERE user_id = ?", (user["id"],))
+        conn.execute("DELETE FROM users WHERE id = ?", (user["id"],))
+
+    _append_data_request({
+        "tipo": "account_deletion_completed",
+        "user_id": user["id"],
+        "email_hash": hashlib.sha256(user["email"].lower().encode("utf-8")).hexdigest(),
+        "timestamp": agora_iso(),
+    })
+    return {"status": "deleted"}
 
 
 @app.post("/api/checkout/session")
@@ -1272,7 +1361,7 @@ async def record_consent(req: ConsentModel):
 
 if __name__ == "__main__":
     import uvicorn
-    host = os.environ.get("HOST", "0.0.0.0")
+    host = os.environ.get("HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", 8000))
     reload = bool(os.environ.get("DEV", "").lower() in {"1", "true", "yes"})
     uvicorn.run("main:app", host=host, port=port, reload=reload)

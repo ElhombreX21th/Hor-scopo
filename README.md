@@ -74,7 +74,7 @@ O projeto esta preparado para Vercel com:
 - `vercel.json` roteando o frontend estatico em `/` e FastAPI em `/api/*`.
 - `api/index.py` como entrada serverless Python.
 - `.vercelignore` removendo bancos locais, logs e caches do deploy.
-- `requirements.txt` na raiz apontando para `backend/requirements.txt`.
+- `requirements.txt` na raiz com as dependências Python usadas pela função serverless.
 
 Variaveis recomendadas na Vercel:
 
@@ -87,6 +87,11 @@ STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
 STRIPE_PRICE_VIP=<price_...>
 STRIPE_WEBHOOK_SECRET=<whsec_...>
+PAYPAL_MODE=live
+PAYPAL_CLIENT_ID=<client_id>
+PAYPAL_SECRET=<secret>
+PAYPAL_WEBHOOK_ID=<webhook_id>
+MP_ACCESS_TOKEN=<mercado_pago_access_token>
 ```
 
 Dominio:
