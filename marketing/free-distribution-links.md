@@ -1,12 +1,12 @@
 # Links uteis para distribuicao sem pagar loja
 
-- App/PWA: https://seufuturo-phi.vercel.app/
-- Imagem social publica: https://seufuturo-phi.vercel.app/icons/social-card.png
-- Manifest PWA: https://seufuturo-phi.vercel.app/manifest.json
-- Sitemap: https://seufuturo-phi.vercel.app/sitemap.xml
-- Politica de privacidade: https://seufuturo-phi.vercel.app/privacy
-- Termos: https://seufuturo-phi.vercel.app/terms
-- IndexNow key: https://seufuturo-phi.vercel.app/d20eb7b81b91056eb97ceb22171c8952.txt
+- App/PWA: https://hypersecit.com.br/
+- Imagem social publica: https://hypersecit.com.br/icons/social-card.png
+- Manifest PWA: https://hypersecit.com.br/manifest.json
+- Sitemap: https://hypersecit.com.br/sitemap.xml
+- Politica de privacidade: https://hypersecit.com.br/privacy
+- Termos: https://hypersecit.com.br/terms
+- IndexNow key: https://hypersecit.com.br/d20eb7b81b91056eb97ceb22171c8952.txt
 
 ## Indexacao gratuita
 

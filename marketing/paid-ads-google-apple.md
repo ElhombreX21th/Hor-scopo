@@ -4,8 +4,8 @@
 
 Pode anunciar agora:
 
-- URL: `https://seufuturo-phi.vercel.app/`
-- Pagina de confirmacao de assinatura: `https://seufuturo-phi.vercel.app/confirmacao-assinatura`
+- URL: `https://hypersecit.com.br/`
+- Pagina de confirmacao de assinatura: `https://hypersecit.com.br/confirmacao-assinatura`
 - Objetivo: trafego para site ou conversoes no site.
 - Headline 1: `SeuFuturo`
 - Headline 2: `Horoscopo diario por signo`

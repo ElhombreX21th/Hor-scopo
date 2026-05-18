@@ -1,6 +1,6 @@
 # Plano gratuito de divulgacao - SeuFuturo
 
-URL principal: https://seufuturo-phi.vercel.app/
+URL principal: https://hypersecit.com.br/
 
 Objetivo de hoje: gerar visitas qualificadas sem pagar Apple, Google ou anuncios.
 
@@ -40,4 +40,3 @@ Objetivo de hoje: gerar visitas qualificadas sem pagar Apple, Google ou anuncios
 ## Regra de seguranca comercial
 
 Nao prometer resultado financeiro, amoroso, profissional ou espiritual. Use sempre linguagem de entretenimento/reflexao. Isso reduz risco de bloqueio em plataformas e reclamações.
-

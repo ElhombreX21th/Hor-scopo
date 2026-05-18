@@ -42,4 +42,3 @@
 - [ ] Rodar testes automatizados.
 - [ ] Rodar auditoria de dependencias.
 - [ ] Fazer smoke test no deployment de producao.
-

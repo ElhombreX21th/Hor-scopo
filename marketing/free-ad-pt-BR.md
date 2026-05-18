@@ -17,7 +17,7 @@ Escolha seu signo, leia a previsao do dia e, se quiser, desbloqueie leituras ext
 Funciona direto no navegador, sem precisar baixar pela App Store ou Google Play.
 
 Teste aqui:
-https://seufuturo-phi.vercel.app/
+https://hypersecit.com.br/
 
 ## CTA
 
@@ -26,4 +26,3 @@ Abrir minha previsao diaria
 ## Hashtags
 
 #horoscopo #signos #astrologia #zodiaco #previsaododia #pwa
-

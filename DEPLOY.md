@@ -7,7 +7,7 @@ Opções recomendadas:
 - Docker + Docker Compose (recomendado para VPS ou serviços que suportem containers)
 - Deploy em PaaS (Heroku, Render, Railway) usando `Procfile` ou Docker
 
-## Vercel + dominio HYPERSECIT.COM.BR
+## Vercel - projeto exclusivo SeuFuturo
 
 O repo ja inclui configuracao para deploy na Vercel:
 
@@ -17,7 +17,7 @@ O repo ja inclui configuracao para deploy na Vercel:
 
 Fluxo recomendado:
 
-1. Importe o repo GitHub na Vercel.
+1. Use o projeto Vercel `seufuturo-horoscopo`.
 2. Configure o projeto como "Other" se a Vercel nao detectar automaticamente.
 3. Adicione as variaveis de ambiente de producao:
 
@@ -32,10 +32,10 @@ STRIPE_PRICE_VIP=<price_...>
 STRIPE_WEBHOOK_SECRET=<whsec_...>
 ```
 
-4. Adicione o dominio `hypersecit.com.br` no projeto Vercel.
-5. No DNS do dominio, use os valores exibidos pela Vercel. Valores gerais documentados:
-   - apex/root `hypersecit.com.br`: registro `A` para `76.76.21.21`
-   - `www.hypersecit.com.br`: registro `CNAME` para `cname.vercel-dns-0.com`
+4. O domínio `hypersecit.com.br` deve estar anexado ao projeto Vercel `seufuturo-horoscopo`.
+5. Configure no provedor DNS:
+   - `A hypersecit.com.br 76.76.21.21`
+   - `A www.hypersecit.com.br 76.76.21.21`
 6. Configure o webhook Stripe em `https://hypersecit.com.br/api/stripe/webhook`.
 
 Importante: SQLite em Vercel usa armazenamento efemero. Para assinaturas reais persistentes, migre para Postgres/Neon/Supabase antes de trafego real.
@@ -52,7 +52,7 @@ docker-compose up -d
 ```
 
 3. Acesse:
-- Frontend: https://hypersecit.com.br
+- Frontend local: `http://127.0.0.1:8001`
 - Backend: http://localhost:8000
 
 Produção com domínio e HTTPS:
@@ -63,16 +63,16 @@ Produção com domínio e HTTPS:
 
 3. No servidor, clone o repositório e rode o `docker-compose` (como acima).
 
-4. Configure um proxy reverso (nginx/Caddy) para mapear o domínio final:
+4. Configure um proxy reverso (nginx/Caddy) para mapear o domínio próprio final:
 
-- `https://hypersecit.com.br` -> frontend na raiz
-- `https://hypersecit.com.br/api/*` -> backend
-- `https://hypersecit.com.br/docs` e `https://hypersecit.com.br/openapi.json` -> backend
+- `https://SEU-DOMINIO-SEUFUTURO` -> frontend na raiz
+- `https://SEU-DOMINIO-SEUFUTURO/api/*` -> backend
+- `https://SEU-DOMINIO-SEUFUTURO/docs` e `https://SEU-DOMINIO-SEUFUTURO/openapi.json` -> backend
 
 5. Recomendado: usar Caddy ou Certbot + nginx para TLS automático. Exemplo com Caddy (Caddyfile):
 
 ```
-hypersecit.com.br {
+SEU-DOMINIO-SEUFUTURO {
   handle /api/* {
     reverse_proxy localhost:8000
   }

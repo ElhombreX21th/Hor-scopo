@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://seufuturo-phi.vercel.app/sitemap.xml
+Sitemap: https://hypersecit.com.br/sitemap.xml
 
-IndexNow: https://seufuturo-phi.vercel.app/d20eb7b81b91056eb97ceb22171c8952.txt
+IndexNow: https://hypersecit.com.br/d20eb7b81b91056eb97ceb22171c8952.txt

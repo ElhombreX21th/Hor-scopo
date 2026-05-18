@@ -8,7 +8,7 @@
 - Tipo: App
 - Preco do app: Gratis
 - Email de contato: suporte@hypersecit.com.br
-- Politica de privacidade: https://seufuturo-phi.vercel.app/privacy
+- Politica de privacidade: https://hypersecit.com.br/privacy
 
 ## Descricao completa
 
@@ -35,4 +35,3 @@ Observacao: em app distribuido pelo Google Play, compras de conteudo digital den
 - Icone 512x512: `store/assets/google-play-icon-512.png`
 - Feature graphic 1024x500: `store/assets/feature-graphic-1024x500.png`
 - Screenshot: `store/screenshots/android-pixel-7.png`
-

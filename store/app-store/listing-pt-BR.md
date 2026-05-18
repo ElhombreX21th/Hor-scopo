@@ -6,9 +6,9 @@
 - Subtitulo: Horoscopo diario por signo
 - Categoria primaria: Lifestyle
 - Preco do app: Gratis
-- Politica de privacidade: https://seufuturo-phi.vercel.app/privacy
-- URL de suporte: https://seufuturo-phi.vercel.app/terms
-- URL de marketing: https://seufuturo-phi.vercel.app/
+- Politica de privacidade: https://hypersecit.com.br/privacy
+- URL de suporte: https://hypersecit.com.br/terms
+- URL de marketing: https://hypersecit.com.br/
 
 ## Texto promocional
 
@@ -42,4 +42,3 @@ Observacao: em app distribuido pela App Store, compras de conteudo digital dentr
 
 - Icone 1024x1024: `store/assets/app-icon-1024.png`
 - Screenshot: `store/screenshots/ios-phone-430x932.png`
-

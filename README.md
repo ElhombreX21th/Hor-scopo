@@ -2,6 +2,18 @@
 
 SaaS de previsões astrológicas com backend FastAPI, frontend PWA responsivo, autenticação, paywall por plano e assinatura recorrente via Stripe Checkout.
 
+## Projeto Vercel Exclusivo
+
+O SeuFuturo fica isolado no projeto Vercel `seufuturo-horoscopo`.
+
+URL pública final:
+
+```text
+https://hypersecit.com.br
+```
+
+Não use domínios ou projetos de outros produtos para este app. O domínio `hypersecit.com.br` deve ficar anexado apenas ao projeto Vercel `seufuturo-horoscopo`.
+
 ## Estrutura
 
 ```text
@@ -94,12 +106,13 @@ PAYPAL_WEBHOOK_ID=<webhook_id>
 MP_ACCESS_TOKEN=<mercado_pago_access_token>
 ```
 
-Dominio:
+Domínio:
 
-- Adicione `hypersecit.com.br` ao projeto na Vercel.
-- Para apex/root domain, use o registro A indicado pela Vercel. O valor geral documentado e `76.76.21.21`.
-- Para `www`, use CNAME para o alvo indicado pela Vercel. O valor geral documentado e `cname.vercel-dns-0.com`.
-- Se a Vercel pedir verificacao, crie o TXT exibido no painel antes de ativar producao.
+- Projeto Vercel: `seufuturo-horoscopo`.
+- Domínio de produção: `hypersecit.com.br`.
+- DNS necessário no provedor: `A hypersecit.com.br 76.76.21.21`.
+- DNS recomendado para `www`: `A www.hypersecit.com.br 76.76.21.21`.
+- Não reutilize domínio de outro produto.
 
 Aviso de producao: o SQLite em Vercel fica em armazenamento efemero. Para contas e assinaturas persistentes, troque `HOROSCOPO_DB_PATH` por Postgres/Neon/Supabase antes de trafego real.
 
