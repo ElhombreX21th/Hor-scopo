@@ -2,6 +2,8 @@
   "name": "SeuFuturo - Previsões Diárias",
   "short_name": "SeuFuturo",
   "description": "Descobre teu horóscopo diário com previsões de amor, carreira e sorte. Planos personalizados para todos os signos.",
+  "id": "/",
+  "lang": "pt-BR",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,29 +12,47 @@
   "background_color": "#1a0e2e",
   "icons": [
     {
-      "src": "icons/icon-192.svg",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "icons/icon-512.svg",
+      "src": "icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "screenshots": [
     {
-      "src": "icons/screenshot-narrow.svg",
+      "src": "icons/screenshot-narrow.png",
       "sizes": "540x720",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "form_factor": "narrow"
     },
     {
-      "src": "icons/splash.svg",
+      "src": "icons/splash-1280x720.png",
       "sizes": "1280x720",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "form_factor": "wide"
     }
   ],
@@ -48,9 +68,9 @@
       "url": "/?shortcut=daily",
       "icons": [
         {
-          "src": "icons/icon-192.svg",
+          "src": "icons/icon-192.png",
           "sizes": "192x192",
-          "type": "image/svg+xml"
+          "type": "image/png"
         }
       ]
     },
@@ -61,9 +81,9 @@
       "url": "/?shortcut=premium",
       "icons": [
         {
-          "src": "icons/icon-192.svg",
+          "src": "icons/icon-192.png",
           "sizes": "192x192",
-          "type": "image/svg+xml"
+          "type": "image/png"
         }
       ]
     }

@@ -53,11 +53,14 @@ Fluxo: frontend pede ao backend para criar a ordem; o backend devolve links (inc
 Exemplo simples (sem o SDK PayPal):
 
 ```javascript
-async function startPayPal(amount, returnUrl, cancelUrl) {
+async function startPayPal(plano, returnUrl, cancelUrl, accessToken) {
   const res = await fetch('/api/paypal/create-order', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount: amount, currency: 'BRL', return_url: returnUrl, cancel_url: cancelUrl })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({ plano, return_url: returnUrl, cancel_url: cancelUrl })
   });
 
   const data = await res.json();
@@ -71,8 +74,11 @@ async function startPayPal(amount, returnUrl, cancelUrl) {
 }
 
 // Depois que o usuário voltar (return_url), o teu frontend pode chamar:
-async function capturePayPal(orderId) {
-  const res = await fetch('/api/paypal/capture/' + orderId, { method: 'POST' });
+async function capturePayPal(orderId, accessToken) {
+  const res = await fetch('/api/paypal/capture/' + orderId, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
   return await res.json();
 }
 ```
@@ -86,8 +92,9 @@ Exemplo usando o PayPal JS SDK (buttons) com criação pelo backend:
 paypal.Buttons({
   createOrder: async function() {
     const res = await fetch('/api/paypal/create-order', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ amount: '49.90', currency: 'BRL' })
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${accessToken}`},
+      body: JSON.stringify({ plano: 'premium' })
     });
     const data = await res.json();
     return data.id; // o id da ordem criado pelo backend
@@ -106,16 +113,19 @@ paypal.Buttons({
 
 ## 3) PIX via Mercado Pago (exibir QR Code retornado pelo backend)
 
-Fluxo: frontend chama `/api/mercadopago/create-pix` com `amount` e (opcional) `email`. Backend retorna `qr_code` e `qr_code_base64`.
+Fluxo: frontend chama `/api/mercadopago/create-pix` com `plano` e token do usuário autenticado. O backend escolhe o preço oficial do plano e retorna `qr_code` e `qr_code_base64`.
 
 Exemplo para obter e mostrar o QR code:
 
 ```javascript
-async function startPix(amount, email) {
+async function startPix(plano, accessToken) {
   const res = await fetch('/api/mercadopago/create-pix', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount: amount, email })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({ plano })
   });
 
   const data = await res.json();

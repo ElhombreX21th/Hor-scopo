@@ -1,5 +1,10 @@
 # 📱 Publicar SeuFuturo nas Lojas de Aplicativos
 
+> Atualização de 2026-05-18: o pacote atual de publicação está em `store/`.
+> Use `store/README.md`, `store/submission-checklist.md`, `store/google-play/listing-pt-BR.md`,
+> `store/app-store/listing-pt-BR.md` e `store/privacy/data-safety-and-app-privacy.md` como fonte principal.
+> Este arquivo fica como histórico/guia amplo.
+
 ## 🎯 Visão Geral
 
 O SeuFuturo está pronto para ser distribuído como Progressive Web App (PWA) e pode ser publicado nas principais lojas de aplicativos móveis.

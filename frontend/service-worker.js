@@ -1,14 +1,21 @@
-const CACHE_NAME = 'seufuturo-v2';
+const CACHE_NAME = 'seufuturo-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/privacy.html',
   '/terms.html',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg',
-  '/icons/splash.svg',
-  '/icons/screenshot-narrow.svg'
+  '/icons/apple-touch-icon.png',
+  '/icons/badge-96.png',
+  '/icons/favicon-16.png',
+  '/icons/favicon-32.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-1024.png',
+  '/icons/maskable-192.png',
+  '/icons/maskable-512.png',
+  '/icons/splash-1280x720.png',
+  '/icons/screenshot-narrow.png'
 ];
 
 // Install event - cache static assets
@@ -99,9 +106,9 @@ self.addEventListener('sync', (event) => {
       fetch('/api/horoscopo')
         .then(() => {
           // Show notification
-          self.registration.showNotification('SeuFuturo atualizado! 🌙', {
-            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><text x="48" y="70" font-size="60" text-anchor="middle" fill="%23ff1493" font-family="serif">🌙</text></svg>',
-            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%231a0e2e" width="192" height="192"/><text x="96" y="140" font-size="130" text-anchor="middle" fill="%23ff1493" font-family="serif" font-weight="bold">🌙</text></svg>',
+          self.registration.showNotification('SeuFuturo atualizado!', {
+            badge: '/icons/badge-96.png',
+            icon: '/icons/icon-192.png',
             tag: 'horoscope-notification',
             requireInteraction: false
           });
@@ -116,8 +123,8 @@ self.addEventListener('sync', (event) => {
 // Push notification handler
 self.addEventListener('push', (event) => {
   const options = {
-    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><text x="48" y="70" font-size="60" text-anchor="middle" fill="%23ff1493" font-family="serif">🌙</text></svg>',
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%231a0e2e" width="192" height="192"/><text x="96" y="140" font-size="130" text-anchor="middle" fill="%23ff1493" font-family="serif" font-weight="bold">🌙</text></svg>',
+    badge: '/icons/badge-96.png',
+    icon: '/icons/icon-192.png',
     body: event.data ? event.data.text() : 'Nova previsão disponível!',
     tag: 'horoscope-push',
     requireInteraction: false

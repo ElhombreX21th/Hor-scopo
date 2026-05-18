@@ -110,14 +110,14 @@ Pagamento — como configurar e vincular provedores
   1. Crie conta Business em https://developer.paypal.com/ e gere `PAYPAL_CLIENT_ID` e `PAYPAL_SECRET` (sandbox para testes).
   2. Defina `PAYPAL_MODE` como `sandbox` ou `live` no ambiente.
   3. Endpoints já adicionados no backend:
-     - `POST /api/paypal/create-order` — cria uma ordem. Enviar JSON: `{ "amount": "49.90", "currency": "BRL", "return_url": "https://...", "cancel_url": "https://..." }`.
-     - `POST /api/paypal/capture/{order_id}` — captura a ordem após aprovação.
+     - `POST /api/paypal/create-order` — cria uma ordem autenticada. Enviar JSON: `{ "plano": "premium", "return_url": "https://...", "cancel_url": "https://..." }`. O preço oficial fica no servidor.
+     - `POST /api/paypal/capture/{order_id}` — captura a ordem após aprovação; também exige `Authorization: Bearer <token>`.
   4. Fluxo típico: frontend chama `create-order`, redireciona o utilizador para o link `approve` retornado, após aprovação chama `capture` no backend para finalizar.
 
 - PIX (opções no Brasil):
   - Opção 1 — Mercado Pago (suporta PIX, boleto, cartão): crie conta em https://www.mercadopago.com.br/, gere Access Token e configure no ambiente (ex: `MP_ACCESS_TOKEN`). Use a API de pagamentos do Mercado Pago para gerar QR Code PIX. Existe SDK oficial (`mercadopago`) ou usar `requests` para chamar a API.
   - Opção 2 — Gerencianet / Pagar.me / outros provedores brasileiros: cada provedor tem própria API para gerar QR Codes PIX e webhooks.
-  - Recomendo Mercado Pago para facilidade: criar preferência/ pagamento PIX e retornar o QR code para o frontend.
+  - Recomendo Mercado Pago para facilidade: criar pagamento PIX pelo backend com `{ "plano": "premium" }` ou `{ "plano": "vip" }`; o browser não deve enviar preço.
 
 Variáveis adicionais para pagamentos:
 
