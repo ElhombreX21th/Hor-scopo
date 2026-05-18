@@ -61,6 +61,14 @@
       "dest": "frontend/terms.html"
     },
     {
+      "src": "/confirmacao-assinatura",
+      "dest": "frontend/confirmacao-assinatura.html"
+    },
+    {
+      "src": "/confirmacao-assinatura.html",
+      "dest": "frontend/confirmacao-assinatura.html"
+    },
+    {
       "src": "/",
       "dest": "frontend/index.html"
     },

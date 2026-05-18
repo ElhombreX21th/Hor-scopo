@@ -564,7 +564,7 @@ def create_stripe_checkout_session(user, plano: str, price_id: str, customer_id:
         mode="subscription",
         customer=customer_id,
         line_items=[{"price": price_id, "quantity": 1}],
-        success_url=build_frontend_url("/?checkout=success"),
+        success_url=build_frontend_url("/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"),
         cancel_url=build_frontend_url("/?checkout=cancel"),
         client_reference_id=user["id"],
         metadata={"user_id": user["id"], "plano": plano},

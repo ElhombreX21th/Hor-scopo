@@ -5,6 +5,7 @@
 Pode anunciar agora:
 
 - URL: `https://seufuturo-phi.vercel.app/`
+- Pagina de confirmacao de assinatura: `https://seufuturo-phi.vercel.app/confirmacao-assinatura`
 - Objetivo: trafego para site ou conversoes no site.
 - Headline 1: `SeuFuturo`
 - Headline 2: `Horoscopo diario por signo`
@@ -33,4 +34,3 @@ Preparado:
 ## Copy segura
 
 Evitar prometer resultado financeiro, amoroso ou profissional. Posicionar como entretenimento/reflexao.
-

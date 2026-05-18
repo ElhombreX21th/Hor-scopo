@@ -142,6 +142,31 @@ def test_register_checkout_webhook_unlocks_premium_content(tmp_path, monkeypatch
     assert "dados_da_sorte" not in body
 
 
+def test_stripe_checkout_redirects_to_subscription_confirmation(tmp_path, monkeypatch):
+    build_client(tmp_path)
+    main = sys.modules["main"]
+    created_session = {}
+
+    def fake_create(**kwargs):
+        created_session.update(kwargs)
+        return {"id": "cs_redirect_123", "url": "https://checkout.stripe.com/c/pay/cs_redirect_123"}
+
+    monkeypatch.setattr(main.stripe.checkout.Session, "create", fake_create)
+
+    session = main.create_stripe_checkout_session(
+        {"id": "user_123", "email": "cliente@example.com", "nome": "Cliente"},
+        "premium",
+        "price_premium",
+        "cus_cliente",
+    )
+
+    assert session["id"] == "cs_redirect_123"
+    assert created_session["success_url"] == (
+        "https://hypersecit.com.br/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+    )
+    assert created_session["cancel_url"] == "https://hypersecit.com.br/?checkout=cancel"
+
+
 def test_vip_webhook_unlocks_luck_and_mystic_advice(tmp_path, monkeypatch):
     client = build_client(tmp_path)
     main = sys.modules["main"]

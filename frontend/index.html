@@ -1188,9 +1188,11 @@
             if (!checkoutPlano) return;
             try {
                 document.getElementById('checkoutMessage').textContent = 'A criar ordem PayPal...';
+                const returnUrl = `${window.location.origin}/confirmacao-assinatura?provider=paypal`;
+                const cancelUrl = `${window.location.origin}/?checkout=cancel`;
                 const res = await apiFetch('/api/paypal/create-order', {
                     method: 'POST',
-                    body: JSON.stringify({ plano: checkoutPlano, return_url: window.location.href, cancel_url: window.location.href })
+                    body: JSON.stringify({ plano: checkoutPlano, return_url: returnUrl, cancel_url: cancelUrl })
                 });
 
                 const data = await res.json();
