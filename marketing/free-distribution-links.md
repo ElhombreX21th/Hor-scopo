@@ -6,6 +6,7 @@
 - Sitemap: https://seufuturo-phi.vercel.app/sitemap.xml
 - Politica de privacidade: https://seufuturo-phi.vercel.app/privacy
 - Termos: https://seufuturo-phi.vercel.app/terms
+- IndexNow key: https://seufuturo-phi.vercel.app/d20eb7b81b91056eb97ceb22171c8952.txt
 
 ## Indexacao gratuita
 
@@ -17,4 +18,3 @@
 - Hacker News Show HN: https://news.ycombinator.com/show
 
 Use comunidades apenas quando as regras permitirem autopromocao.
-

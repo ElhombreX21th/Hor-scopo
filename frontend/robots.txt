@@ -3,3 +3,4 @@ Allow: /
 
 Sitemap: https://seufuturo-phi.vercel.app/sitemap.xml
 
+IndexNow: https://seufuturo-phi.vercel.app/d20eb7b81b91056eb97ceb22171c8952.txt

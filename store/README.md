@@ -2,11 +2,13 @@
 
 Estado atual: a PWA esta online em `https://seufuturo-phi.vercel.app/` e pronta para gerar pacotes nativos/TWA quando as contas Apple e Google estiverem autorizadas.
 
-Sem pagar contas de loja, use a distribuicao gratuita por PWA:
+Sem pagar contas de loja agora, use a distribuicao gratuita por PWA:
 
 - Link direto: `https://seufuturo-phi.vercel.app/`
 - A instalacao acontece pelo navegador.
 - O kit de divulgacao gratuita esta em `marketing/`.
+
+O preparo de App Store/Google Play continua neste diretorio para quando voce decidir pagar as contas e seguir para submissao oficial.
 
 ## Links de autorizacao
 
