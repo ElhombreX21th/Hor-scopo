@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="720" viewBox="0 0 540 720">
+  <rect width="540" height="720" fill="#1a0e2e"/>
+  <circle cx="270" cy="170" r="82" fill="#251044" stroke="#ff69b4" stroke-width="2"/>
+  <text x="270" y="202" font-size="96" text-anchor="middle" fill="#ff1493" font-family="serif">🌙</text>
+  <text x="270" y="320" font-size="48" text-anchor="middle" fill="#ff1493" font-family="serif" font-weight="700">SeuFuturo</text>
+  <text x="270" y="370" font-size="26" text-anchor="middle" fill="#ffb6c1" font-family="Arial, sans-serif">Previsões diárias por signo</text>
+  <rect x="76" y="430" width="388" height="138" rx="22" fill="#ffffff" fill-opacity="0.08" stroke="#ffc0cb" stroke-opacity="0.35"/>
+  <text x="270" y="490" font-size="28" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="700">Premium e VIP</text>
+  <text x="270" y="534" font-size="20" text-anchor="middle" fill="#d8cfe3" font-family="Arial, sans-serif">Amor, carreira, sorte e conselho</text>
+</svg>

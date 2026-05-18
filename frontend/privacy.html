@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Política de Privacidade - SeuFuturo</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#120922;color:#fff;padding:24px;line-height:1.6}
+    .container{max-width:900px;margin:0 auto}
+    h1,h2,h3{color:#ffb6c1}
+    a{color:#ff8fb3}
+    input,select,textarea{box-sizing:border-box}
+    .field{padding:10px;margin-top:6px;width:100%;max-width:540px;border-radius:10px;border:1px solid #3a2452;background:#0f0820;color:#fff}
+    .button{padding:11px 16px;border-radius:10px;background:#ff69b4;border:none;color:#fff;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Política de Privacidade</h1>
+    <p>Última atualização: 17 de maio de 2026</p>
+
+    <h2>Dados Coletados</h2>
+    <p>Coletamos apenas dados mínimos necessários para funcionamento do serviço:</p>
+    <ul>
+      <li>Signo zodiacal e plano escolhido</li>
+      <li>Email e nome quando uma conta é criada</li>
+      <li>Dados técnicos agregados para métricas de uso</li>
+    </ul>
+
+    <h2>Como usamos os dados</h2>
+    <p>Usamos os dados para personalizar previsões, gerir assinatura, melhorar a experiência e cumprir obrigações legais.</p>
+
+    <h2>Compartilhamento</h2>
+    <p>Não vendemos dados pessoais. Em produção, provedores de pagamento, hospedagem e email devem ser listados nesta política quando forem integrados.</p>
+
+    <h2>Armazenamento</h2>
+    <p>Este ambiente usa armazenamento local e banco SQLite para desenvolvimento. Em produção, os dados devem ficar em infraestrutura segura com controle de acesso e auditoria.</p>
+
+    <h2>Direitos LGPD</h2>
+    <p>Em conformidade com a Lei Geral de Proteção de Dados, podes solicitar acesso, correção, eliminação, portabilidade ou revogação de consentimento.</p>
+
+    <h3>Solicitar eliminação ou portabilidade</h3>
+    <form id="lgpdForm" style="margin-top:12px">
+      <label for="lgpdEmail">Email:</label><br>
+      <input id="lgpdEmail" class="field" type="email" required><br>
+      <label for="lgpdTipo" style="margin-top:10px;display:block">Tipo de solicitação:</label>
+      <select id="lgpdTipo" class="field" style="max-width:280px">
+        <option value="deletion">Eliminar meus dados</option>
+        <option value="portability">Portabilidade dos meus dados</option>
+      </select>
+      <div style="margin-top:10px">
+        <textarea id="lgpdDetalhe" class="field" placeholder="Detalhes opcionais" style="min-height:90px"></textarea>
+      </div>
+      <div style="margin-top:12px">
+        <button class="button" type="submit">Enviar solicitação</button>
+      </div>
+    </form>
+
+    <div id="lgpdResult" style="margin-top:12px;color:#ffdede"></div>
+
+    <h2>Contacto</h2>
+    <p>Para dúvidas sobre privacidade, contacte: <a href="mailto:suporte@hypersecit.com.br">suporte@hypersecit.com.br</a></p>
+    <p><a href="/">Voltar para a app</a></p>
+  </div>
+
+  <script>
+    const defaultApiBase = window.location.protocol === 'file:' || window.location.port === '8001'
+      ? 'http://127.0.0.1:8000'
+      : window.location.origin;
+    const API_BASE_URL = localStorage.getItem('horoscopoApiBase') || defaultApiBase;
+
+    document.getElementById('lgpdForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = document.getElementById('lgpdEmail').value;
+      const tipo = document.getElementById('lgpdTipo').value;
+      const detalhe = document.getElementById('lgpdDetalhe').value;
+      const endpoint = tipo === 'deletion' ? '/api/request_data_deletion' : '/api/request_data_portability';
+      const result = document.getElementById('lgpdResult');
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, detalhe })
+        });
+        const data = await resp.json();
+        result.textContent = data.message || 'Solicitação enviada.';
+      } catch (err) {
+        result.textContent = `Erro ao enviar solicitação para ${API_BASE_URL}.`;
+      }
+    });
+  </script>
+</body>
+</html>

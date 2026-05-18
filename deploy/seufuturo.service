@@ -1,0 +1,20 @@
+[Unit]
+Description=SeuFuturo FastAPI service
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/horoscopo
+Environment=HOST=0.0.0.0
+Environment=PORT=8000
+Environment=HOROSCOPO_DB_PATH=/var/www/horoscopo/backend/horoscopo.db
+Environment=APP_BASE_URL=https://hypersecit.com.br
+Environment=ALLOWED_ORIGINS=https://hypersecit.com.br
+Environment=ADMIN_TOKEN=CHANGEME
+ExecStart=/usr/bin/env uvicorn backend.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

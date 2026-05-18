@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="SeuFuturo - Previsões diárias personalizadas por signo. Descobre amor, carreira e sorte com planos exclusivos.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SeuFuturo">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231a1a2e' width='192' height='192'/><text x='96' y='130' font-size='120' text-anchor='middle' fill='%23f59e0b' font-family='serif'>🌙</text></svg>">
+    <title>SeuFuturo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Montserrat:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #0f0c1e 0%, #1a0e2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .gradient-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff1493, #ff69b4, #ffd700, #ff1493);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 6s ease infinite;
+            letter-spacing: -1px;
+            text-shadow: 0 8px 32px rgba(255, 20, 147, 0.3);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 20, 147, 0.5), inset 0 0 20px rgba(255, 105, 180, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 20, 147, 0.8), inset 0 0 20px rgba(255, 105, 180, 0.2);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .container-main {
+            animation: slideInDown 0.8s ease-out;
+        }
+        
+        .metrics-card {
+            animation: slideInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .metrics-card:nth-child(1) { animation-delay: 0.1s; }
+        .metrics-card:nth-child(2) { animation-delay: 0.2s; }
+        .metrics-card:nth-child(3) { animation-delay: 0.3s; }
+        
+        .metrics-card {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(255, 105, 180, 0.1));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 192, 203, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metrics-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 20, 147, 0.2) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .metrics-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 192, 203, 0.6);
+            box-shadow: 0 20px 60px rgba(255, 20, 147, 0.3);
+        }
+        
+        .metric-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff1493, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            color: #ffb6c1;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .sign-card {
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            border: 2px solid rgba(255, 192, 203, 0.3);
+            border-radius: 16px;
+            padding: 1rem;
+            background: rgba(255, 20, 147, 0.05);
+            font-weight: 600;
+            text-transform: capitalize;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sign-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .sign-card:hover::before {
+            left: 100%;
+        }
+        
+        .sign-card:hover {
+            transform: scale(1.05) translateY(-4px);
+            border-color: #ff1493;
+            background: rgba(255, 20, 147, 0.15);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+        
+        .sign-card.selected {
+            border-color: #ff1493;
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.3), rgba(255, 105, 180, 0.2));
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.5), inset 0 0 15px rgba(255, 105, 180, 0.2);
+            transform: scale(1.08);
+        }
+        
+        .plan-card {
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            border: 2px solid rgba(255, 192, 203, 0.3);
+            border-radius: 20px;
+            padding: 1.5rem;
+            background: rgba(255, 20, 147, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+        
+        .plan-card:hover::before {
+            left: 100%;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-12px);
+            border-color: #ff1493;
+            background: rgba(255, 20, 147, 0.15);
+            box-shadow: 0 20px 50px rgba(255, 20, 147, 0.4);
+        }
+        
+        .plan-card.selected {
+            border-color: #ff1493;
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.25), rgba(255, 105, 180, 0.15));
+            box-shadow: 0 0 40px rgba(255, 20, 147, 0.6), inset 0 0 20px rgba(255, 105, 180, 0.2);
+        }
+        
+        .plan-card.selected::after {
+            content: '✨';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        .result-section {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.1), rgba(255, 105, 180, 0.08));
+            border: 2px solid rgba(255, 192, 203, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .testimonial-card {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.12), rgba(138, 43, 226, 0.08));
+            border: 1px solid rgba(255, 192, 203, 0.25);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.4s ease;
+            animation: slideInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+        
+        .testimonial-card:nth-child(1) { animation-delay: 0.1s; }
+        .testimonial-card:nth-child(2) { animation-delay: 0.2s; }
+        .testimonial-card:nth-child(3) { animation-delay: 0.3s; }
+        .testimonial-card:nth-child(4) { animation-delay: 0.4s; }
+        .testimonial-card:nth-child(5) { animation-delay: 0.5s; }
+        .testimonial-card:nth-child(6) { animation-delay: 0.6s; }
+        
+        .testimonial-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 192, 203, 0.5);
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.18), rgba(138, 43, 226, 0.12));
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.25);
+        }
+        
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.875rem;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(138, 43, 226, 0.12));
+            border: 2px solid rgba(255, 192, 203, 0.3);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        
+        .cta-btn {
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.875rem;
+        }
+
+        .account-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 20, 147, 0.08));
+            border: 1px solid rgba(255, 192, 203, 0.24);
+            border-radius: 18px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .account-title {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .account-copy {
+            color: #d8cfe3;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .soft-btn {
+            border: 1px solid rgba(255, 192, 203, 0.28);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .soft-btn:hover {
+            border-color: rgba(255, 192, 203, 0.55);
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(7, 4, 18, 0.78);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-backdrop.hidden {
+            display: none;
+        }
+
+        .modal-card {
+            width: min(100%, 460px);
+            background: linear-gradient(145deg, rgba(26, 14, 46, 0.98), rgba(18, 9, 34, 0.98));
+            border: 1px solid rgba(255, 192, 203, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+            padding: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-field {
+            width: 100%;
+            border: 1px solid rgba(255, 192, 203, 0.22);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-radius: 12px;
+            padding: 0.8rem 0.9rem;
+            outline: none;
+        }
+
+        .form-field:focus {
+            border-color: #ff69b4;
+            box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.16);
+        }
+
+        .status-message {
+            min-height: 1.25rem;
+            font-size: 0.875rem;
+            color: #ffb6c1;
+        }
+        
+        .btn-premium {
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+        }
+        
+        .btn-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 45px rgba(255, 20, 147, 0.6);
+        }
+        
+        .btn-vip {
+            background: linear-gradient(135deg, #8a2be2, #da70d6);
+            color: white;
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.4);
+        }
+        
+        .btn-vip:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 45px rgba(138, 43, 226, 0.6);
+        }
+        
+        .loading {
+            animation: spin 1.5s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg, #ff1493, #ffd700);
+            border-radius: 2px;
+        }
+        
+        .stars {
+            color: #ffd700;
+            letter-spacing: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .gradient-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .metric-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen py-6 md:py-10 px-4 md:px-6">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-12 container-main">
+                <div class="mb-4">
+                    <span style="font-size: 4rem; animation: float 3s ease-in-out infinite;">✨</span>
+                </div>
+                <h1 class="gradient-title text-4xl md:text-5xl font-bold mb-4">SeuFuturo</h1>
+                <p class="text-gray-300 text-base md:text-lg font-light">Descobre o que o universo tem preparado para ti</p>
+                <div class="mt-4" style="letter-spacing: 3px; color: #ffb6c1; font-size: 0.875rem;">
+                    🌙 • 🌟 • 💫 • 🌙
+                </div>
+            </div>
+
+            <!-- Métricas Dashboard -->
+            <div class="mb-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="metrics-card">
+                        <div class="metric-number" id="metricaAssinantes">24,850</div>
+                        <div class="metric-label">Assinantes Activas</div>
+                    </div>
+                    <div class="metrics-card">
+                        <div class="metric-number" id="metricaSatisfacao">98.7%</div>
+                        <div class="metric-label">Taxa de Satisfação</div>
+                    </div>
+                    <div class="metrics-card">
+                        <div class="metric-number" id="metricaPaises">45+</div>
+                        <div class="metric-label">Países Activos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conta / Assinatura -->
+            <div class="mb-8 account-panel">
+                <div>
+                    <div class="account-title" id="accountTitle">Conta de assinante</div>
+                    <p class="account-copy" id="accountStatus">Entra ou cria uma conta para desbloquear Premium e VIP.</p>
+                </div>
+                <div class="flex gap-3 flex-wrap">
+                    <button class="soft-btn" id="openAuthBtn" type="button">Entrar / Criar conta</button>
+                    <button class="soft-btn hidden" id="billingPortalBtn" type="button">Gerir assinatura</button>
+                    <button class="soft-btn hidden" id="logoutBtn" type="button">Sair</button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                <!-- Left Sidebar - Signos (Mobile-friendly) -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white/5 backdrop-blur rounded-2xl p-6 border border-pink-200/20">
+                        <h2 class="text-lg md:text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <span>🔮</span>
+                            <span>Escolhe o teu Signo</span>
+                        </h2>
+                        <div class="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-2 gap-2 md:gap-3" id="signosContainer">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Content - Planos -->
+                <div class="lg:col-span-2">
+                    <!-- Planos -->
+                    <div class="mb-6 md:mb-8">
+                        <h2 class="text-lg md:text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <span>💎</span>
+                            <span>Escolhe o teu Plano</span>
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4" id="planosContainer">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Resultado -->
+                    <div id="resultadoContainer" class="result-section hidden">
+                        <div id="loadingSpinner" class="text-center hidden">
+                            <div class="inline-block animate-spin">
+                                <svg class="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m0 0h6m0-6v6"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-300 mt-4 text-sm md:text-base">A carregar as previsões astrológicas...</p>
+                        </div>
+
+                        <div id="resultadoContent" class="hidden">
+                            <h3 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-4 md:mb-6 font-playfair" id="resultadoTitulo"></h3>
+                            
+                            <!-- Previsão Diária -->
+                            <div class="mb-4 md:mb-6">
+                                <h4 class="text-base md:text-lg font-semibold text-pink-300 mb-2 flex items-center gap-2">
+                                    <span>📅</span>
+                                    <span>Previsão Diária</span>
+                                </h4>
+                                <p class="text-gray-200 text-sm md:text-base leading-relaxed" id="previsaoDiaria"></p>
+                            </div>
+
+                            <!-- Amor (Premium+) -->
+                            <div class="mb-4 md:mb-6 amor-section hidden">
+                                <h4 class="text-base md:text-lg font-semibold text-red-300 mb-2 flex items-center gap-2">
+                                    <span>💕</span>
+                                    <span>Amor</span>
+                                </h4>
+                                <p class="text-gray-200 text-sm md:text-base leading-relaxed" id="amor"></p>
+                            </div>
+
+                            <!-- Carreira (Premium+) -->
+                            <div class="mb-4 md:mb-6 carreira-section hidden">
+                                <h4 class="text-base md:text-lg font-semibold text-purple-300 mb-2 flex items-center gap-2">
+                                    <span>💼</span>
+                                    <span>Carreira</span>
+                                </h4>
+                                <p class="text-gray-200 text-sm md:text-base leading-relaxed" id="carreira"></p>
+                            </div>
+
+                            <!-- Sorte (VIP) -->
+                            <div class="mb-4 md:mb-6 sorte-section hidden">
+                                <h4 class="text-base md:text-lg font-semibold text-yellow-300 mb-2 flex items-center gap-2">
+                                    <span>🍀</span>
+                                    <span>Dados da Sorte</span>
+                                </h4>
+                                <p class="text-gray-200 text-sm md:text-base leading-relaxed" id="sorte"></p>
+                            </div>
+
+                            <!-- Conselho VIP -->
+                            <div class="mb-4 md:mb-6 conselho-section hidden">
+                                <h4 class="text-base md:text-lg font-semibold text-violet-300 mb-2 flex items-center gap-2">
+                                    <span>✨</span>
+                                    <span>Conselho Místico VIP</span>
+                                </h4>
+                                <p class="text-gray-200 text-sm md:text-base leading-relaxed" id="conselho"></p>
+                            </div>
+
+                            <!-- Plan Badge -->
+                            <div class="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-pink-200/20">
+                                <p class="text-xs md:text-sm text-gray-400">
+                                    Plano: 
+                                    <span class="text-pink-300 font-bold tracking-widest" id="planoBadge"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="errorMessage" class="hidden">
+                            <p class="text-red-400 text-center text-sm md:text-base"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonials Section -->
+            <div class="mt-12 md:mt-16 pt-12 md:pt-16 border-t border-white/20">
+                <h2 class="gradient-title text-2xl md:text-4xl font-bold text-center mb-8 md:mb-12 px-4">💬 O Que Dizem Nossos Clientes</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10 hover:border-amber-400/50 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-amber-400 to-pink-400 flex items-center justify-center text-white text-xs md:text-sm font-bold">MJ</div>
+                            <div class="ml-3 md:ml-4">
+                                <p class="text-white font-semibold text-sm md:text-base">Maria João</p>
+                                <p class="text-gray-400 text-xs md:text-sm">Premium Member</p>
+                            </div>
+                        </div>
+                        <div class="flex text-amber-400 mb-3 text-sm md:text-base">
+                            ⭐⭐⭐⭐⭐
+                        </div>
+                        <p class="text-gray-300 text-xs md:text-sm">"As previsões são incrivelmente precisas! O plano Premium mudou a minha perspectiva sobre relacionamentos. Recomendo!"</p>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10 hover:border-amber-400/50 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-xs md:text-sm font-bold">CP</div>
+                            <div class="ml-3 md:ml-4">
+                                <p class="text-white font-semibold text-sm md:text-base">Carlos Pereira</p>
+                                <p class="text-gray-400 text-xs md:text-sm">VIP Member</p>
+                            </div>
+                        </div>
+                        <div class="flex text-amber-400 mb-3 text-sm md:text-base">
+                            ⭐⭐⭐⭐⭐
+                        </div>
+                        <p class="text-gray-300 text-xs md:text-sm">"O conselho místico VIP é transformador! Tomei decisões profissionais baseado nas insights e tudo correu perfeito."</p>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10 hover:border-amber-400/50 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-white text-xs md:text-sm font-bold">AS</div>
+                            <div class="ml-3 md:ml-4">
+                                <p class="text-white font-semibold text-sm md:text-base">Antónia Silva</p>
+                                <p class="text-gray-400 text-xs md:text-sm">Basic Member</p>
+                            </div>
+                        </div>
+                        <div class="flex text-amber-400 mb-3 text-sm md:text-base">
+                            ⭐⭐⭐⭐⭐
+                        </div>
+                        <p class="text-gray-300 text-xs md:text-sm">"Mesmo com o plano grátis, as previsões diárias são valiosas. Depois vou fazer upgrade para Premium!"</p>
+                    </div>
+
+                    <!-- Testimonial 4 -->
+                    <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10 hover:border-amber-400/50 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center text-white text-xs md:text-sm font-bold">RS</div>
+                            <div class="ml-3 md:ml-4">
+                                <p class="text-white font-semibold text-sm md:text-base">Ricardo Sousa</p>
+                                <p class="text-gray-400 text-xs md:text-sm">VIP Member</p>
+                            </div>
+                        </div>
+                        <div class="flex text-amber-400 mb-3 text-sm md:text-base">
+                            ⭐⭐⭐⭐⭐
+                        </div>
+                        <p class="text-gray-300 text-xs md:text-sm">"Aplicação perfeita no telemóvel! Consulto o meu horóscopo todos os dias. Totalmente recomendado!"</p>
+                    </div>
+
+                    <!-- Testimonial 5 -->
+                    <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10 hover:border-amber-400/50 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white text-xs md:text-sm font-bold">FB</div>
+                            <div class="ml-3 md:ml-4">
+                                <p class="text-white font-semibold text-sm md:text-base">Fátima Brás</p>
+                                <p class="text-gray-400 text-xs md:text-sm">Premium Member</p>
+                            </div>
+                        </div>
+                        <div class="flex text-amber-400 mb-3 text-sm md:text-base">
+                            ⭐⭐⭐⭐⭐
+                        </div>
+                        <p class="text-gray-300 text-xs md:text-sm">"O design é bonito, as informações são claras, e a experiência é fluida. Melhor app de horóscopo que já vi!"</p>
+                    </div>
+
+                    <!-- Testimonial 6 -->
+                    <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10 hover:border-amber-400/50 transition">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center text-white text-xs md:text-sm font-bold">TM</div>
+                            <div class="ml-3 md:ml-4">
+                                <p class="text-white font-semibold text-sm md:text-base">Tiago Martins</p>
+                                <p class="text-gray-400 text-xs md:text-sm">Premium Member</p>
+                            </div>
+                        </div>
+                        <div class="flex text-amber-400 mb-3 text-sm md:text-base">
+                            ⭐⭐⭐⭐⭐
+                        </div>
+                        <p class="text-gray-300 text-xs md:text-sm">"Investimento que vale a pena. As previsões de amor e carreira guiaram minhas escolhas com sucesso!"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="mt-12 md:mt-16 text-center py-8 md:py-12 bg-gradient-to-r from-amber-500/10 to-pink-500/10 backdrop-blur rounded-lg border border-amber-400/20">
+                <h3 class="text-xl md:text-3xl font-bold text-white mb-3 md:mb-4 px-4">Pronto para Descobrir Teu Destino?</h3>
+                <p class="text-gray-300 mb-4 md:mb-6 px-4 text-sm md:text-base">Milhares de pessoas já confiam em nós para guiar suas vidas.</p>
+                <div class="flex flex-col md:flex-row gap-3 md:gap-4 justify-center px-4">
+                    <button onclick="document.querySelector('[data-plano=\"premium\"]').click()" class="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition text-sm md:text-base">Experimentar Premium</button>
+                    <button onclick="document.querySelector('[data-plano=\"vip\"]').click()" class="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition text-sm md:text-base">Descobrir VIP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <div class="modal-card">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="modal-title" id="authTitle">Conta mística</h2>
+                    <p class="text-gray-300 text-sm" id="authSubtitle">Cria uma conta ou entra para gerir a tua assinatura.</p>
+                </div>
+                <button class="soft-btn" type="button" id="closeAuthBtn" aria-label="Fechar">×</button>
+            </div>
+
+            <form id="authForm" class="space-y-3">
+                <input class="form-field" id="authNome" type="text" autocomplete="name" placeholder="Nome">
+                <input class="form-field" id="authEmail" type="email" autocomplete="email" placeholder="Email" required>
+                <input class="form-field" id="authPassword" type="password" autocomplete="current-password" placeholder="Senha" minlength="8" required>
+                <select class="form-field" id="authSigno" aria-label="Signo">
+                    <option value="Aries">Aries</option>
+                    <option value="Touro">Touro</option>
+                    <option value="Gémeos">Gémeos</option>
+                    <option value="Cancro">Cancro</option>
+                    <option value="Leão">Leão</option>
+                    <option value="Virgem">Virgem</option>
+                    <option value="Libra">Libra</option>
+                    <option value="Escorpião">Escorpião</option>
+                    <option value="Sagitário">Sagitário</option>
+                    <option value="Capricórnio">Capricórnio</option>
+                    <option value="Aquário">Aquário</option>
+                    <option value="Peixes">Peixes</option>
+                </select>
+                <div class="status-message" id="authMessage"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button class="cta-btn btn-premium w-full" type="button" id="registerBtn">Criar conta</button>
+                    <button class="cta-btn btn-vip w-full" type="button" id="loginBtn">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="checkoutModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+        <div class="modal-card">
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="modal-title" id="checkoutTitle">Ativar plano</h2>
+                    <p class="text-gray-300 text-sm" id="checkoutCopy">Serás encaminhado para o checkout seguro da Stripe para concluir a assinatura.</p>
+                </div>
+                <button class="soft-btn" type="button" id="closeCheckoutBtn" aria-label="Fechar">×</button>
+            </div>
+            <div class="rounded-xl border border-pink-200/20 bg-white/5 p-4 mb-4">
+                <div class="text-sm uppercase tracking-widest text-pink-200">Plano selecionado</div>
+                <div class="text-2xl font-bold text-white mt-1" id="checkoutPlanName">Premium</div>
+                <div class="text-gray-300 text-sm mt-1" id="checkoutPlanPrice">R$ 49,90/mês</div>
+            </div>
+            <div class="status-message mb-4" id="checkoutMessage"></div>
+            <div class="grid gap-3">
+                <button class="cta-btn btn-premium w-full" type="button" id="confirmCheckoutBtn">Pagar com Cartão (Stripe)</button>
+                <button class="cta-btn soft-btn w-full" type="button" id="paypalCheckoutBtn">Pagar com PayPal</button>
+                <button class="cta-btn soft-btn w-full" type="button" id="pixCheckoutBtn">Pagar com PIX</button>
+            </div>
+
+            <div id="pixArea" class="mt-4 hidden text-center">
+                <div id="pixLoading" class="text-sm text-gray-300">A gerar QR Code PIX...</div>
+                <div id="pixImage" class="mt-3"></div>
+                <div id="pixInfo" class="text-xs text-gray-400 mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SIGNOS = ['Aries', 'Touro', 'Gémeos', 'Cancro', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes'];
+        const PLANOS = [
+            { id: 'basic', nome: 'Basic', preco: 'Grátis', descricao: 'Previsão diária', valor: '0.00' },
+            { id: 'premium', nome: 'Premium', preco: 'R$ 49,90/mês', descricao: 'Amor + Carreira', valor: '49.90' },
+            { id: 'vip', nome: 'VIP', preco: 'R$ 150,00/mês', descricao: 'Tudo + Conselho Místico', valor: '150.00' }
+        ];
+        const PLAN_ORDER = { basic: 0, premium: 1, vip: 2 };
+        const STORAGE_KEY = 'horoscopoSession';
+        const defaultApiBase = window.location.protocol === 'file:' || window.location.port === '8001'
+            ? 'http://127.0.0.1:8000'
+            : window.location.origin;
+        const API_BASE_URL = localStorage.getItem('horoscopoApiBase') || defaultApiBase;
+
+        let sessao = carregarSessao();
+        let signoSelecionado = null;
+        let planoSelecionado = sessao?.user?.plano || 'basic';
+        let planoPendenteUpgrade = null;
+        let checkoutPlano = null;
+
+        function carregarSessao() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY));
+            } catch (error) {
+                localStorage.removeItem(STORAGE_KEY);
+                return null;
+            }
+        }
+
+        function salvarSessao(novaSessao) {
+            sessao = novaSessao;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(novaSessao));
+            atualizarContaUI();
+            renderPlanos();
+            atualizarPlanoSelecionado();
+        }
+
+        function limparSessao() {
+            sessao = null;
+            localStorage.removeItem(STORAGE_KEY);
+            planoSelecionado = 'basic';
+            atualizarContaUI();
+            renderPlanos();
+            atualizarPlanoSelecionado();
+        }
+
+        function planoInfo(planoId) {
+            return PLANOS.find(plano => plano.id === planoId) || PLANOS[0];
+        }
+
+        function temPlano(planoId) {
+            if (planoId === 'basic') return true;
+            return Boolean(sessao?.user && PLAN_ORDER[sessao.user.plano] >= PLAN_ORDER[planoId]);
+        }
+
+        async function apiFetch(path, options = {}, includeAuth = true) {
+            const headers = new Headers(options.headers || {});
+            if (options.body && !headers.has('Content-Type')) {
+                headers.set('Content-Type', 'application/json');
+            }
+            if (includeAuth && sessao?.access_token) {
+                headers.set('Authorization', `Bearer ${sessao.access_token}`);
+            }
+
+            return fetch(`${API_BASE_URL}${path}`, {
+                ...options,
+                headers
+            });
+        }
+
+        function atualizarContaUI() {
+            const accountTitle = document.getElementById('accountTitle');
+            const accountStatus = document.getElementById('accountStatus');
+            const openAuthBtn = document.getElementById('openAuthBtn');
+            const billingPortalBtn = document.getElementById('billingPortalBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (sessao?.user) {
+                accountTitle.textContent = `Olá, ${sessao.user.nome}`;
+                accountStatus.textContent = `Plano ${sessao.user.plano.toUpperCase()} ativo para ${sessao.user.email}.`;
+                openAuthBtn.textContent = 'Trocar conta';
+                billingPortalBtn.classList.toggle('hidden', sessao.user.plano === 'basic');
+                logoutBtn.classList.remove('hidden');
+            } else {
+                accountTitle.textContent = 'Conta de assinante';
+                accountStatus.textContent = 'Entra ou cria uma conta para desbloquear Premium e VIP.';
+                openAuthBtn.textContent = 'Entrar / Criar conta';
+                billingPortalBtn.classList.add('hidden');
+                logoutBtn.classList.add('hidden');
+            }
+        }
+
+        function renderSignos() {
+            const container = document.getElementById('signosContainer');
+            container.innerHTML = SIGNOS.map(signo => `
+                <button class="sign-card bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20 text-white hover:bg-white/20 transition" onclick="selecionarSigno('${signo}')" data-signo="${signo}">
+                    <div class="text-sm font-semibold">${signo}</div>
+                </button>
+            `).join('');
+        }
+
+        function renderPlanos() {
+            const container = document.getElementById('planosContainer');
+            container.innerHTML = PLANOS.map(plano => {
+                const desbloqueado = temPlano(plano.id);
+                const status = plano.id === 'basic'
+                    ? 'Incluído para todos'
+                    : desbloqueado ? 'Ativo na tua conta' : 'Requer assinatura';
+
+                return `
+                    <button class="plan-card bg-white/10 backdrop-blur rounded-lg p-4 md:p-6 border border-white/20 text-white hover:bg-white/20 transition text-center" onclick="selecionarPlano('${plano.id}')" data-plano="${plano.id}">
+                        <div class="text-xl md:text-2xl font-bold text-amber-400 mb-2">${plano.nome}</div>
+                        <div class="text-xs md:text-sm text-gray-300 mb-3">${plano.preco}</div>
+                        <div class="text-xs text-gray-400">${plano.descricao}</div>
+                        <div class="mt-3 text-[11px] uppercase tracking-widest ${desbloqueado ? 'text-green-300' : 'text-pink-200'}">${status}</div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function atualizarPlanoSelecionado() {
+            document.querySelectorAll('[data-plano]').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.plano === planoSelecionado);
+            });
+        }
+
+        function selecionarSigno(signo) {
+            signoSelecionado = signo;
+
+            document.querySelectorAll('[data-signo]').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.signo === signo);
+            });
+
+            buscarHoroscopo();
+        }
+
+        function selecionarPlano(plano) {
+            planoSelecionado = plano;
+            atualizarPlanoSelecionado();
+
+            if (plano !== 'basic' && !sessao) {
+                abrirAuthModal(plano);
+                return;
+            }
+
+            if (plano !== 'basic' && !temPlano(plano)) {
+                abrirCheckoutModal(plano);
+                return;
+            }
+
+            if (signoSelecionado) {
+                buscarHoroscopo();
+            }
+        }
+
+        function limparResultadoPagoBloqueado() {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('resultadoContent').classList.add('hidden');
+        }
+
+        async function buscarHoroscopo() {
+            if (!signoSelecionado) return;
+
+            const resultadoContainer = document.getElementById('resultadoContainer');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultadoContent = document.getElementById('resultadoContent');
+            const errorMessage = document.getElementById('errorMessage');
+
+            resultadoContainer.classList.remove('hidden');
+            loadingSpinner.classList.remove('hidden');
+            resultadoContent.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+
+            try {
+                const query = new URLSearchParams({ signo: signoSelecionado, plano: planoSelecionado });
+                const response = await apiFetch(`/api/horoscopo?${query.toString()}`);
+                const data = await response.json().catch(() => ({}));
+
+                if (response.status === 401) {
+                    limparSessao();
+                    limparResultadoPagoBloqueado();
+                    abrirAuthModal(planoSelecionado);
+                    return;
+                }
+
+                if (response.status === 402) {
+                    limparResultadoPagoBloqueado();
+                    if (!sessao) {
+                        abrirAuthModal(planoSelecionado);
+                    } else {
+                        abrirCheckoutModal(planoSelecionado, data.detail);
+                    }
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Erro ao buscar horóscopo');
+                }
+
+                document.getElementById('resultadoTitulo').textContent = `🔮 ${data.signo}`;
+                document.getElementById('previsaoDiaria').textContent = data.previsao_diaria;
+                document.getElementById('planoBadge').textContent = data.plano_consultado.toUpperCase();
+
+                document.querySelectorAll('.amor-section, .carreira-section, .sorte-section, .conselho-section').forEach(sec => {
+                    sec.classList.add('hidden');
+                });
+
+                if (data.amor) {
+                    document.getElementById('amor').textContent = data.amor;
+                    document.querySelector('.amor-section').classList.remove('hidden');
+                }
+
+                if (data.carreira) {
+                    document.getElementById('carreira').textContent = data.carreira;
+                    document.querySelector('.carreira-section').classList.remove('hidden');
+                }
+
+                if (data.dados_da_sorte) {
+                    document.getElementById('sorte').textContent = data.dados_da_sorte;
+                    document.querySelector('.sorte-section').classList.remove('hidden');
+                }
+
+                if (data.conselho_mistico_vip) {
+                    document.getElementById('conselho').textContent = data.conselho_mistico_vip;
+                    document.querySelector('.conselho-section').classList.remove('hidden');
+                }
+
+                loadingSpinner.classList.add('hidden');
+                resultadoContent.classList.remove('hidden');
+            } catch (error) {
+                console.error('Erro:', error);
+                loadingSpinner.classList.add('hidden');
+                errorMessage.classList.remove('hidden');
+                errorMessage.querySelector('p').textContent = `⚠️ Não foi possível carregar a API em ${API_BASE_URL}`;
+            }
+        }
+
+        function abrirAuthModal(planoPendente = null) {
+            planoPendenteUpgrade = planoPendente && planoPendente !== 'basic' ? planoPendente : null;
+            document.getElementById('authSigno').value = signoSelecionado || sessao?.user?.signo || 'Aries';
+            document.getElementById('authSubtitle').textContent = planoPendenteUpgrade
+                ? `Entra ou cria uma conta para ativar o plano ${planoInfo(planoPendenteUpgrade).nome}.`
+                : 'Cria uma conta ou entra para gerir a tua assinatura.';
+            document.getElementById('authMessage').textContent = '';
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function fecharAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        async function autenticar(modo) {
+            const message = document.getElementById('authMessage');
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const nome = document.getElementById('authNome').value.trim() || 'Assinante';
+            const signo = document.getElementById('authSigno').value;
+
+            if (!email || !password) {
+                message.textContent = 'Preenche email e senha.';
+                return;
+            }
+
+            message.textContent = modo === 'register' ? 'A criar conta...' : 'A entrar...';
+
+            try {
+                const payload = modo === 'register'
+                    ? { nome, email, password, signo }
+                    : { email, password };
+                const endpoint = modo === 'register' ? '/api/auth/register' : '/api/auth/login';
+                const response = await apiFetch(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                }, false);
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Falha na autenticação.');
+                }
+
+                salvarSessao(data);
+                fecharAuthModal();
+
+                if (planoPendenteUpgrade && !temPlano(planoPendenteUpgrade)) {
+                    abrirCheckoutModal(planoPendenteUpgrade);
+                    return;
+                }
+
+                buscarHoroscopo();
+            } catch (error) {
+                message.textContent = error.message;
+            }
+        }
+
+        function abrirCheckoutModal(plano, detalhe = '') {
+            checkoutPlano = plano;
+            const info = planoInfo(plano);
+            document.getElementById('checkoutPlanName').textContent = info.nome;
+            document.getElementById('checkoutPlanPrice').textContent = info.preco;
+            document.getElementById('checkoutMessage').textContent = detalhe || 'Pagamento processado com segurança pela Stripe.';
+            document.getElementById('checkoutModal').classList.remove('hidden');
+        }
+
+        function fecharCheckoutModal() {
+            document.getElementById('checkoutModal').classList.add('hidden');
+        }
+
+        async function confirmarCheckout() {
+            if (!checkoutPlano) return;
+            if (!sessao) {
+                fecharCheckoutModal();
+                abrirAuthModal(checkoutPlano);
+                return;
+            }
+
+            const message = document.getElementById('checkoutMessage');
+            message.textContent = 'A criar checkout seguro...';
+
+            try {
+                const sessionResponse = await apiFetch('/api/checkout/session', {
+                    method: 'POST',
+                    body: JSON.stringify({ plano: checkoutPlano })
+                });
+                const sessionData = await sessionResponse.json().catch(() => ({}));
+
+                if (!sessionResponse.ok) {
+                    throw new Error(sessionData.detail || 'Não foi possível criar checkout.');
+                }
+
+                if (!sessionData.checkout_url) {
+                    throw new Error('Checkout criado sem URL de pagamento.');
+                }
+
+                message.textContent = 'A abrir Stripe Checkout...';
+                window.location.href = sessionData.checkout_url;
+            } catch (error) {
+                message.textContent = error.message;
+            }
+        }
+
+        // PayPal flow: cria ordem no backend e redireciona para aprovação
+        async function startPayPalFromModal() {
+            if (!checkoutPlano) return;
+            const info = planoInfo(checkoutPlano);
+            try {
+                document.getElementById('checkoutMessage').textContent = 'A criar ordem PayPal...';
+                const res = await apiFetch('/api/paypal/create-order', {
+                    method: 'POST',
+                    body: JSON.stringify({ amount: info.valor, currency: 'BRL', return_url: window.location.href, cancel_url: window.location.href })
+                }, false);
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Erro PayPal');
+
+                const approve = data.links && data.links.find(l => l.rel === 'approve');
+                if (approve && approve.href) {
+                    window.location = approve.href;
+                    return;
+                }
+
+                throw new Error('Link de aprovação PayPal não recebido.');
+            } catch (err) {
+                document.getElementById('checkoutMessage').textContent = err.message || 'Erro PayPal';
+            }
+        }
+
+        // PIX (Mercado Pago) flow: cria pagamento e mostra QR code
+        async function startPixFromModal() {
+            if (!checkoutPlano) return;
+            const info = planoInfo(checkoutPlano);
+            const pixArea = document.getElementById('pixArea');
+            const pixLoading = document.getElementById('pixLoading');
+            const pixImage = document.getElementById('pixImage');
+            const pixInfo = document.getElementById('pixInfo');
+
+            pixArea.classList.remove('hidden');
+            pixLoading.classList.remove('hidden');
+            pixImage.innerHTML = '';
+            pixInfo.textContent = '';
+
+            try {
+                const res = await apiFetch('/api/mercadopago/create-pix', {
+                    method: 'POST',
+                    body: JSON.stringify({ amount: info.valor })
+                }, false);
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Erro PIX');
+
+                pixLoading.classList.add('hidden');
+                if (data.qr_code_base64) {
+                    const img = document.createElement('img');
+                    img.src = 'data:image/png;base64,' + data.qr_code_base64;
+                    img.alt = 'PIX QR Code';
+                    img.style.maxWidth = '220px';
+                    pixImage.appendChild(img);
+                    pixInfo.textContent = `ID: ${data.id} — estado: ${data.status}`;
+                } else if (data.qr_code) {
+                    pixImage.textContent = data.qr_code;
+                    pixInfo.textContent = `ID: ${data.id} — estado: ${data.status}`;
+                } else {
+                    throw new Error('Resposta inesperada do servidor PIX');
+                }
+            } catch (err) {
+                pixLoading.classList.add('hidden');
+                pixInfo.textContent = err.message || 'Erro ao gerar PIX';
+            }
+        }
+
+        async function abrirPortalStripe() {
+            if (!sessao) {
+                abrirAuthModal();
+                return;
+            }
+
+            try {
+                const response = await apiFetch('/api/billing/portal', { method: 'POST' });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Não foi possível abrir a gestão da assinatura.');
+                }
+
+                window.location.href = data.portal_url;
+            } catch (error) {
+                document.getElementById('accountStatus').textContent = error.message;
+            }
+        }
+
+        async function sincronizarConta() {
+            if (!sessao?.access_token) return;
+
+            try {
+                const response = await apiFetch('/api/me');
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.user) {
+                    salvarSessao({ ...sessao, user: data.user });
+                    planoSelecionado = data.user.plano;
+                    atualizarPlanoSelecionado();
+                }
+            } catch (error) {
+                console.log('Conta não sincronizada', error);
+            }
+        }
+
+        async function carregarMetricas() {
+            try {
+                const response = await apiFetch('/api/metricas', {}, false);
+                const data = await response.json();
+
+                document.getElementById('metricaAssinantes').textContent = data.assinantes_ativos.toLocaleString('pt-BR');
+                document.getElementById('metricaSatisfacao').textContent = data.taxa_satisfacao + '%';
+                document.getElementById('metricaPaises').textContent = data.paises_ativos + '+';
+            } catch (error) {
+                console.log('Métricas indisponíveis (backend offline)', error);
+            }
+        }
+
+        document.getElementById('openAuthBtn').addEventListener('click', () => abrirAuthModal());
+        document.getElementById('billingPortalBtn').addEventListener('click', abrirPortalStripe);
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            limparSessao();
+            buscarHoroscopo();
+        });
+        document.getElementById('closeAuthBtn').addEventListener('click', fecharAuthModal);
+        document.getElementById('registerBtn').addEventListener('click', () => autenticar('register'));
+        document.getElementById('loginBtn').addEventListener('click', () => autenticar('login'));
+        document.getElementById('authForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            autenticar('login');
+        });
+        document.getElementById('closeCheckoutBtn').addEventListener('click', fecharCheckoutModal);
+        document.getElementById('confirmCheckoutBtn').addEventListener('click', confirmarCheckout);
+        document.getElementById('paypalCheckoutBtn').addEventListener('click', startPayPalFromModal);
+        document.getElementById('pixCheckoutBtn').addEventListener('click', startPixFromModal);
+
+        renderSignos();
+        renderPlanos();
+        atualizarContaUI();
+        atualizarPlanoSelecionado();
+        selecionarSigno(sessao?.user?.signo || 'Aries');
+        carregarMetricas();
+        sincronizarConta().then(() => {
+            if (new URLSearchParams(window.location.search).get('checkout') === 'success') {
+                buscarHoroscopo();
+            }
+        });
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then((registration) => {
+                    console.log('✅ Service Worker registado com sucesso');
+                    
+                    // Check for updates periodically
+                    setInterval(() => {
+                        registration.update();
+                    }, 60000); // Check every 60 seconds
+                })
+                .catch((error) => {
+                    console.log('❌ Service Worker registration failed:', error);
+                });
+        }
+
+        // Prompt for app installation (PWA)
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button if needed
+            console.log('💬 App installation available');
+        });
+
+        // Handle app install success
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ App installed successfully');
+            deferredPrompt = null;
+        });
+
+        // Detect if app is installed
+        if (window.navigator.standalone === true) {
+            console.log('✅ Running as standalone app');
+            document.body.classList.add('standalone-mode');
+        }
+    </script>
+</body>
+</html>
