@@ -7,6 +7,39 @@ Opções recomendadas:
 - Docker + Docker Compose (recomendado para VPS ou serviços que suportem containers)
 - Deploy em PaaS (Heroku, Render, Railway) usando `Procfile` ou Docker
 
+## Vercel + dominio HYPERSECIT.COM.BR
+
+O repo ja inclui configuracao para deploy na Vercel:
+
+- `vercel.json` envia `/`, `/manifest.json`, `/service-worker.js`, `/privacy` e `/terms` para o frontend em `frontend/`.
+- `/api/*`, `/docs` e `/openapi.json` sao enviados para o FastAPI serverless em `api/index.py`.
+- `.vercelignore` evita enviar banco SQLite local, logs e caches.
+
+Fluxo recomendado:
+
+1. Importe o repo GitHub na Vercel.
+2. Configure o projeto como "Other" se a Vercel nao detectar automaticamente.
+3. Adicione as variaveis de ambiente de producao:
+
+```text
+APP_NAME=SeuFuturo
+APP_BASE_URL=https://hypersecit.com.br
+ALLOWED_ORIGINS=https://hypersecit.com.br
+ADMIN_TOKEN=<token forte>
+STRIPE_SECRET_KEY=<sk_live_...>
+STRIPE_PRICE_PREMIUM=<price_...>
+STRIPE_PRICE_VIP=<price_...>
+STRIPE_WEBHOOK_SECRET=<whsec_...>
+```
+
+4. Adicione o dominio `hypersecit.com.br` no projeto Vercel.
+5. No DNS do dominio, use os valores exibidos pela Vercel. Valores gerais documentados:
+   - apex/root `hypersecit.com.br`: registro `A` para `76.76.21.21`
+   - `www.hypersecit.com.br`: registro `CNAME` para `cname.vercel-dns-0.com`
+6. Configure o webhook Stripe em `https://hypersecit.com.br/api/stripe/webhook`.
+
+Importante: SQLite em Vercel usa armazenamento efemero. Para assinaturas reais persistentes, migre para Postgres/Neon/Supabase antes de trafego real.
+
 Passos com Docker (testes locais):
 
 1. Certifique-se de ter `docker` e `docker-compose` instalados.

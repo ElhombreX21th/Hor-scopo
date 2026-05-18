@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+backend/horoscopo.db
+backend/data_requests.json
+backend/logs/
+backend/server*.log
+frontend/server*.log
+.pytest_cache/
+backend/.pytest_cache/
+__pycache__/
+backend/__pycache__/
+.venv/
+venv/
+node_modules/

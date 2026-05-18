@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seufuturo-v1';
+const CACHE_NAME = 'seufuturo-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -48,23 +48,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For API requests, try network first, then cache
+  // API responses can contain account-specific data, so keep them network-only.
   if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Clone the response to cache it
-          const clonedResponse = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, clonedResponse);
-          });
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cached version for offline
-          return caches.match(request);
-        })
-    );
+    event.respondWith(fetch(request));
     return;
   }
 

@@ -67,6 +67,37 @@ O webhook público deve apontar para:
 POST https://hypersecit.com.br/api/stripe/webhook
 ```
 
+## Deploy na Vercel
+
+O projeto esta preparado para Vercel com:
+
+- `vercel.json` roteando o frontend estatico em `/` e FastAPI em `/api/*`.
+- `api/index.py` como entrada serverless Python.
+- `.vercelignore` removendo bancos locais, logs e caches do deploy.
+- `requirements.txt` na raiz apontando para `backend/requirements.txt`.
+
+Variaveis recomendadas na Vercel:
+
+```text
+APP_NAME=SeuFuturo
+APP_BASE_URL=https://hypersecit.com.br
+ALLOWED_ORIGINS=https://hypersecit.com.br
+ADMIN_TOKEN=<token forte>
+STRIPE_SECRET_KEY=<sk_live_...>
+STRIPE_PRICE_PREMIUM=<price_...>
+STRIPE_PRICE_VIP=<price_...>
+STRIPE_WEBHOOK_SECRET=<whsec_...>
+```
+
+Dominio:
+
+- Adicione `hypersecit.com.br` ao projeto na Vercel.
+- Para apex/root domain, use o registro A indicado pela Vercel. O valor geral documentado e `76.76.21.21`.
+- Para `www`, use CNAME para o alvo indicado pela Vercel. O valor geral documentado e `cname.vercel-dns-0.com`.
+- Se a Vercel pedir verificacao, crie o TXT exibido no painel antes de ativar producao.
+
+Aviso de producao: o SQLite em Vercel fica em armazenamento efemero. Para contas e assinaturas persistentes, troque `HOROSCOPO_DB_PATH` por Postgres/Neon/Supabase antes de trafego real.
+
 Eventos Stripe usados:
 
 - `checkout.session.completed`

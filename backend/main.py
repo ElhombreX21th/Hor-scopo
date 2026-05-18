@@ -28,6 +28,22 @@ if load_dotenv:
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 
+BASE_DIR = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+DEFAULT_RUNTIME_DIR = "/tmp/seufuturo" if IS_VERCEL else BASE_DIR
+
+
+def resolve_project_path(path: str):
+    if os.path.isabs(path):
+        return path
+    return os.path.join(PROJECT_ROOT, path)
+
+
+runtime_dir_env = os.environ.get("HOROSCOPO_RUNTIME_DIR")
+RUNTIME_DIR = resolve_project_path(runtime_dir_env) if runtime_dir_env else DEFAULT_RUNTIME_DIR
+os.makedirs(RUNTIME_DIR, exist_ok=True)
+
 APP_NAME = os.environ.get("APP_NAME", "SeuFuturo")
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://hypersecit.com.br").rstrip("/")
 ALLOWED_ORIGINS = [
@@ -46,15 +62,21 @@ STRIPE_PRICE_IDS = {
 app = FastAPI(title=f"SaaS {APP_NAME}")
 
 # Logging
-LOG_PATH = os.path.join(os.path.dirname(__file__), "logs")
-os.makedirs(LOG_PATH, exist_ok=True)
+log_path_env = os.environ.get("HOROSCOPO_LOG_PATH")
+LOG_PATH = resolve_project_path(log_path_env) if log_path_env else os.path.join(RUNTIME_DIR, "logs")
+log_handlers = [logging.StreamHandler()]
+
+if not IS_VERCEL or os.environ.get("ENABLE_FILE_LOGS") == "1":
+    try:
+        os.makedirs(LOG_PATH, exist_ok=True)
+        log_handlers.append(logging.FileHandler(os.path.join(LOG_PATH, "backend.log")))
+    except OSError:
+        pass
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(name)s %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(os.path.join(LOG_PATH, 'backend.log'))
-    ]
+    handlers=log_handlers
 )
 logger = logging.getLogger('seufuturo')
 
@@ -90,7 +112,8 @@ SIGNO_ALIASES = {
     "aquario": "aquario",
     "peixes": "peixes",
 }
-DB_PATH = os.environ.get("HOROSCOPO_DB_PATH", os.path.join(os.path.dirname(__file__), "horoscopo.db"))
+db_path_env = os.environ.get("HOROSCOPO_DB_PATH")
+DB_PATH = resolve_project_path(db_path_env) if db_path_env else os.path.join(RUNTIME_DIR, "horoscopo.db")
 
 
 def agora_iso():
@@ -1174,7 +1197,8 @@ async def obter_metricas():
 
 
 # --- LGPD helpers and endpoints ---
-DATA_REQUESTS_PATH = os.path.join(os.path.dirname(__file__), "data_requests.json")
+data_requests_path_env = os.environ.get("DATA_REQUESTS_PATH")
+DATA_REQUESTS_PATH = resolve_project_path(data_requests_path_env) if data_requests_path_env else os.path.join(RUNTIME_DIR, "data_requests.json")
 
 def _append_data_request(item: dict):
     """Append a request to a local JSON file for audit/tracking.
