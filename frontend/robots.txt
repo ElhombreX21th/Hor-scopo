@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://seufuturo-phi.vercel.app/sitemap.xml
+

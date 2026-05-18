@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seufuturo-v3';
+const CACHE_NAME = 'seufuturo-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -14,6 +14,7 @@ const STATIC_ASSETS = [
   '/icons/icon-1024.png',
   '/icons/maskable-192.png',
   '/icons/maskable-512.png',
+  '/icons/social-card.png',
   '/icons/splash-1280x720.png',
   '/icons/screenshot-narrow.png'
 ];

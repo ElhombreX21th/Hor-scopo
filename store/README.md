@@ -2,6 +2,12 @@
 
 Estado atual: a PWA esta online em `https://seufuturo-phi.vercel.app/` e pronta para gerar pacotes nativos/TWA quando as contas Apple e Google estiverem autorizadas.
 
+Sem pagar contas de loja, use a distribuicao gratuita por PWA:
+
+- Link direto: `https://seufuturo-phi.vercel.app/`
+- A instalacao acontece pelo navegador.
+- O kit de divulgacao gratuita esta em `marketing/`.
+
 ## Links de autorizacao
 
 - Google Play Console: https://play.google.com/console/
@@ -49,4 +55,3 @@ Produtos sugeridos:
 - `seufuturo_vip_monthly` -> plano VIP mensal.
 
 Depois que as contas estiverem liberadas, o proximo passo tecnico e criar os produtos nas lojas e adicionar verificacao server-side dos recibos/tokens antes de liberar `premium` ou `vip`.
-

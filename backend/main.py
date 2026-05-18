@@ -1276,16 +1276,13 @@ async def root():
 @app.get("/api/metricas")
 async def obter_metricas():
     """
-    Retorna métricas gerais do SaaS
+    Retorna dados gerais do produto sem prova social inventada.
     """
     return {
-        "assinantes_ativos": 24850,
-        "taxa_satisfacao": 98.7,
-        "paises_ativos": 45,
-        "receita_mensal_estimada": "R$ 2,847,300",
-        "usuarios_premium": 8200,
-        "usuarios_vip": 1240,
-        "usuarios_basic": 15410
+        "signos_disponiveis": 12,
+        "planos_disponiveis": 3,
+        "app_instalavel": True,
+        "categorias": ["diario", "amor", "carreira", "sorte"]
     }
 
 
