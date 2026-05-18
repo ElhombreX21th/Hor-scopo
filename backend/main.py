@@ -99,6 +99,7 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
 }
+API_CONTENT_SECURITY_POLICY = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 
 
 @app.middleware("http")
@@ -107,8 +108,11 @@ async def add_security_headers(request: Request, call_next):
     for header, value in SECURITY_HEADERS.items():
         if header not in response.headers:
             response.headers[header] = value
-    if request.url.path.startswith("/api/") and "Cache-Control" not in response.headers:
-        response.headers["Cache-Control"] = "no-store"
+    if request.url.path.startswith("/api/"):
+        if "Content-Security-Policy" not in response.headers:
+            response.headers["Content-Security-Policy"] = API_CONTENT_SECURITY_POLICY
+        if "Cache-Control" not in response.headers:
+            response.headers["Cache-Control"] = "no-store"
     return response
 
 # Configuração da API Externa (Exemplo usando uma API pública ou fictícia)
