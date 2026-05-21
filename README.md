@@ -65,6 +65,8 @@ Obrigatórias para pagamento real:
 - `STRIPE_SECRET_KEY`: chave secreta Stripe
 - `STRIPE_PRICE_PREMIUM`: ID do Price recorrente Premium
 - `STRIPE_PRICE_VIP`: ID do Price recorrente VIP
+- `STRIPE_LOOKUP_KEY_PREMIUM`: lookup key do Price Premium, usado se `STRIPE_PRICE_PREMIUM` não estiver definido
+- `STRIPE_LOOKUP_KEY_VIP`: lookup key do Price VIP, usado se `STRIPE_PRICE_VIP` não estiver definido
 - `STRIPE_WEBHOOK_SECRET`: segredo do webhook Stripe
 
 O domínio de produção configurado no projeto é:
@@ -98,6 +100,8 @@ ADMIN_TOKEN=<token forte>
 STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
 STRIPE_PRICE_VIP=<price_...>
+STRIPE_LOOKUP_KEY_PREMIUM=seufuturo_premium_monthly
+STRIPE_LOOKUP_KEY_VIP=seufuturo_vip_monthly
 STRIPE_WEBHOOK_SECRET=<whsec_...>
 PAYPAL_MODE=live
 PAYPAL_CLIENT_ID=<client_id>

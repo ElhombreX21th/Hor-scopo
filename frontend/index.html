@@ -839,6 +839,14 @@
         let planoSelecionado = sessao?.user?.plano || 'basic';
         let planoPendenteUpgrade = null;
         let checkoutPlano = null;
+        let paymentConfig = {
+            providers: {
+                stripe: { enabled: false },
+                paypal: { enabled: false },
+                pix: { enabled: false }
+            },
+            available_providers: []
+        };
 
         function carregarSessao() {
             try {
@@ -888,6 +896,50 @@
                 ...options,
                 headers
             });
+        }
+
+        function provedorPagamentoAtivo(provedor) {
+            return Boolean(paymentConfig?.providers?.[provedor]?.enabled);
+        }
+
+        function atualizarCheckoutProviders() {
+            const stripeEnabled = provedorPagamentoAtivo('stripe');
+            const paypalEnabled = provedorPagamentoAtivo('paypal');
+            const pixEnabled = provedorPagamentoAtivo('pix');
+            const hasProvider = stripeEnabled || paypalEnabled || pixEnabled;
+
+            document.getElementById('confirmCheckoutBtn').classList.toggle('hidden', !stripeEnabled);
+            document.getElementById('paypalCheckoutBtn').classList.toggle('hidden', !paypalEnabled);
+            document.getElementById('pixCheckoutBtn').classList.toggle('hidden', !pixEnabled);
+            document.getElementById('pixArea').classList.add('hidden');
+
+            const checkoutCopy = document.getElementById('checkoutCopy');
+            const checkoutMessage = document.getElementById('checkoutMessage');
+            if (!hasProvider) {
+                checkoutCopy.textContent = 'Nenhum checkout está configurado no servidor neste momento.';
+                checkoutMessage.textContent = 'Configure Stripe, PayPal ou Mercado Pago nas variáveis de produção da Vercel.';
+                return;
+            }
+
+            checkoutCopy.textContent = 'Escolhe uma forma de pagamento segura para concluir a assinatura.';
+            checkoutMessage.textContent = 'Pagamento processado com segurança pelo provedor selecionado.';
+        }
+
+        async function carregarPaymentConfig() {
+            try {
+                const response = await apiFetch('/api/payments/config', {}, false);
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Configuração de pagamento indisponível.');
+                }
+                paymentConfig = data;
+            } catch (error) {
+                console.warn('Configuração de pagamentos indisponível.', error);
+            }
+
+            if (!document.getElementById('checkoutModal').classList.contains('hidden')) {
+                atualizarCheckoutProviders();
+            }
         }
 
         function atualizarContaUI() {
@@ -1142,7 +1194,10 @@
             const info = planoInfo(plano);
             document.getElementById('checkoutPlanName').textContent = info.nome;
             document.getElementById('checkoutPlanPrice').textContent = info.preco;
-            document.getElementById('checkoutMessage').textContent = detalhe || 'Pagamento processado com segurança pela Stripe.';
+            atualizarCheckoutProviders();
+            if (detalhe) {
+                document.getElementById('checkoutMessage').textContent = detalhe;
+            }
             document.getElementById('checkoutModal').classList.remove('hidden');
         }
 
@@ -1152,6 +1207,10 @@
 
         async function confirmarCheckout() {
             if (!checkoutPlano) return;
+            if (!provedorPagamentoAtivo('stripe')) {
+                document.getElementById('checkoutMessage').textContent = 'Checkout Stripe não configurado no servidor.';
+                return;
+            }
             if (!sessao) {
                 fecharCheckoutModal();
                 abrirAuthModal(checkoutPlano);
@@ -1186,6 +1245,10 @@
         // PayPal flow: cria ordem no backend e redireciona para aprovação
         async function startPayPalFromModal() {
             if (!checkoutPlano) return;
+            if (!provedorPagamentoAtivo('paypal')) {
+                document.getElementById('checkoutMessage').textContent = 'Checkout PayPal não configurado no servidor.';
+                return;
+            }
             try {
                 document.getElementById('checkoutMessage').textContent = 'A criar ordem PayPal...';
                 const returnUrl = `${window.location.origin}/confirmacao-assinatura?provider=paypal`;
@@ -1213,6 +1276,10 @@
         // PIX (Mercado Pago) flow: cria pagamento e mostra QR code
         async function startPixFromModal() {
             if (!checkoutPlano) return;
+            if (!provedorPagamentoAtivo('pix')) {
+                document.getElementById('checkoutMessage').textContent = 'Checkout PIX não configurado no servidor.';
+                return;
+            }
             const pixArea = document.getElementById('pixArea');
             const pixLoading = document.getElementById('pixLoading');
             const pixImage = document.getElementById('pixImage');
@@ -1356,6 +1423,7 @@
         renderPlanos();
         atualizarContaUI();
         atualizarPlanoSelecionado();
+        carregarPaymentConfig();
         selecionarSigno(sessao?.user?.signo || 'Aries');
         carregarMetricas();
         sincronizarConta().then(() => {

@@ -6,12 +6,16 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 
-def build_client(tmp_path):
+def build_client(tmp_path, stripe_prices=True):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
     os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
     os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
-    os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
-    os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    if stripe_prices:
+        os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
+        os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    else:
+        os.environ.pop("STRIPE_PRICE_PREMIUM", None)
+        os.environ.pop("STRIPE_PRICE_VIP", None)
     os.environ.pop("STRIPE_WEBHOOK_SECRET", None)
 
     backend_dir = Path(__file__).resolve().parent
@@ -140,6 +144,63 @@ def test_register_checkout_webhook_unlocks_premium_content(tmp_path, monkeypatch
     assert "amor" in body
     assert "carreira" in body
     assert "dados_da_sorte" not in body
+
+
+def test_checkout_resolves_all_paid_stripe_prices_by_lookup_key(tmp_path, monkeypatch):
+    client = build_client(tmp_path, stripe_prices=False)
+    main = sys.modules["main"]
+    lookup_to_price = {
+        "seufuturo_premium_monthly": "price_lookup_premium",
+        "seufuturo_vip_monthly": "price_lookup_vip",
+    }
+    requested_lookup_keys = []
+    created_sessions = []
+
+    class FakePrice:
+        @staticmethod
+        def list(**kwargs):
+            lookup_key = kwargs["lookup_keys"][0]
+            requested_lookup_keys.append(lookup_key)
+            return {"data": [{"id": lookup_to_price[lookup_key], "lookup_key": lookup_key}]}
+
+    monkeypatch.setattr(main.stripe, "Price", FakePrice)
+    monkeypatch.setattr(main, "get_or_create_stripe_customer", lambda user: "cus_lookup")
+
+    def fake_checkout_session(user, plano, price_id, customer_id):
+        created_sessions.append((plano, price_id, customer_id))
+        return {
+            "id": f"cs_{plano}_lookup",
+            "url": f"https://checkout.stripe.com/c/pay/cs_{plano}_lookup",
+        }
+
+    monkeypatch.setattr(main, "create_stripe_checkout_session", fake_checkout_session)
+
+    registered = client.post(
+        "/api/auth/register",
+        json={
+            "nome": "Lia Lookup",
+            "email": "lia@example.com",
+            "password": "senha-segura-123",
+            "signo": "Aries",
+        },
+    ).json()
+    token = registered["access_token"]
+
+    for plano in ("premium", "vip"):
+        response = client.post(
+            "/api/checkout/session",
+            json={"plano": plano},
+            headers=auth_headers(token),
+        )
+
+        assert response.status_code == 200
+        assert response.json()["checkout_url"] == f"https://checkout.stripe.com/c/pay/cs_{plano}_lookup"
+
+    assert requested_lookup_keys == ["seufuturo_premium_monthly", "seufuturo_vip_monthly"]
+    assert created_sessions == [
+        ("premium", "price_lookup_premium", "cus_lookup"),
+        ("vip", "price_lookup_vip", "cus_lookup"),
+    ]
 
 
 def test_stripe_checkout_redirects_to_subscription_confirmation(tmp_path, monkeypatch):
@@ -282,6 +343,60 @@ def test_subscription_deleted_webhook_downgrades_to_basic(tmp_path, monkeypatch)
 
     assert deleted_response.status_code == 200
     assert client.get("/api/me", headers=auth_headers(token)).json()["user"]["plano"] == "basic"
+
+
+def test_subscription_update_uses_plan_metadata_when_price_env_is_missing(tmp_path):
+    client = build_client(tmp_path, stripe_prices=False)
+    registered = client.post(
+        "/api/auth/register",
+        json={
+            "nome": "Mara Metadata",
+            "email": "mara@example.com",
+            "password": "senha-segura-123",
+            "signo": "Libra",
+        },
+    ).json()
+    token = registered["access_token"]
+    user_id = registered["user"]["id"]
+
+    checkout_response = client.post(
+        "/api/stripe/webhook",
+        json={
+            "id": "evt_metadata_checkout",
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "id": "cs_metadata_123",
+                    "customer": "cus_metadata",
+                    "subscription": "sub_metadata_123",
+                    "payment_status": "paid",
+                    "metadata": {"user_id": user_id, "plano": "vip"},
+                }
+            },
+        },
+    )
+    assert checkout_response.status_code == 200
+    assert client.get("/api/me", headers=auth_headers(token)).json()["user"]["plano"] == "vip"
+
+    update_response = client.post(
+        "/api/stripe/webhook",
+        json={
+            "id": "evt_metadata_update",
+            "type": "customer.subscription.updated",
+            "data": {
+                "object": {
+                    "id": "sub_metadata_123",
+                    "customer": "cus_metadata",
+                    "status": "active",
+                    "metadata": {"plano": "premium"},
+                    "items": {"data": [{"price": {"id": "price_unknown"}}]},
+                }
+            },
+        },
+    )
+
+    assert update_response.status_code == 200
+    assert client.get("/api/me", headers=auth_headers(token)).json()["user"]["plano"] == "premium"
 
 
 def test_billing_portal_uses_stripe_customer(tmp_path, monkeypatch):

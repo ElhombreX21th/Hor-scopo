@@ -7,16 +7,27 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 
-def build_client(tmp_path):
+def build_client(tmp_path, payment_env=True):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
     os.environ["DATA_REQUESTS_PATH"] = str(tmp_path / "data-requests.json")
     os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
-    os.environ["PAYPAL_CLIENT_ID"] = "paypal-client"
-    os.environ["PAYPAL_SECRET"] = "paypal-secret"
-    os.environ["MP_ACCESS_TOKEN"] = "mp-token"
-    os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
-    os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
-    os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    if payment_env:
+        os.environ["PAYPAL_CLIENT_ID"] = "paypal-client"
+        os.environ["PAYPAL_SECRET"] = "paypal-secret"
+        os.environ["MP_ACCESS_TOKEN"] = "APP_USR-mp-token"
+        os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
+        os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
+        os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    else:
+        for key in (
+            "PAYPAL_CLIENT_ID",
+            "PAYPAL_SECRET",
+            "MP_ACCESS_TOKEN",
+            "STRIPE_SECRET_KEY",
+            "STRIPE_PRICE_PREMIUM",
+            "STRIPE_PRICE_VIP",
+        ):
+            os.environ.pop(key, None)
     os.environ.pop("STRIPE_WEBHOOK_SECRET", None)
 
     backend_dir = Path(__file__).resolve().parent
@@ -46,6 +57,58 @@ def register_user(client):
 
 def auth_headers(token):
     return {"Authorization": f"Bearer {token}"}
+
+
+def test_payment_config_reports_only_configured_providers(tmp_path):
+    client, _ = build_client(tmp_path)
+
+    response = client.get("/api/payments/config")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["available_providers"] == ["stripe", "paypal", "pix"]
+    assert data["providers"]["stripe"]["enabled"] is True
+    assert data["providers"]["paypal"]["enabled"] is True
+    assert data["providers"]["pix"]["enabled"] is True
+
+
+def test_payment_config_disables_missing_provider_credentials(tmp_path):
+    client, _ = build_client(tmp_path, payment_env=False)
+
+    response = client.get("/api/payments/config")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["available_providers"] == []
+    assert data["providers"]["stripe"]["enabled"] is False
+    assert data["providers"]["paypal"]["enabled"] is False
+    assert data["providers"]["pix"]["enabled"] is False
+
+
+def test_payment_config_rejects_invalid_mercadopago_token_shape(tmp_path):
+    client, _ = build_client(tmp_path)
+    os.environ["MP_ACCESS_TOKEN"] = "3418544510"
+
+    response = client.get("/api/payments/config")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["providers"]["pix"]["enabled"] is False
+    assert "pix" not in data["available_providers"]
+
+
+def test_mercadopago_pix_rejects_invalid_token_shape(tmp_path):
+    client, _ = build_client(tmp_path)
+    os.environ["MP_ACCESS_TOKEN"] = "3418544510"
+    user = register_user(client)
+
+    response = client.post(
+        "/api/mercadopago/create-pix",
+        json={"plano": "premium"},
+        headers=auth_headers(user["access_token"]),
+    )
+
+    assert response.status_code == 503
 
 
 def test_paypal_order_requires_auth_and_server_side_plan_price(tmp_path, monkeypatch):
@@ -87,9 +150,65 @@ def test_paypal_order_requires_auth_and_server_side_plan_price(tmp_path, monkeyp
     assert created_orders[0]["purchase_units"][0]["reference_id"] == "vip"
 
 
+def test_paypal_capture_completed_activates_authenticated_plan(tmp_path, monkeypatch):
+    client, main = build_client(tmp_path)
+    user = register_user(client)
+    headers = auth_headers(user["access_token"])
+
+    monkeypatch.setattr(main, "get_paypal_access_token", lambda: "paypal-token")
+
+    class FakeResp:
+        def __init__(self, payload):
+            self.payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self.payload
+
+    def fake_post(url, json=None, headers=None, timeout=None, **kwargs):
+        if url.endswith("/v2/checkout/orders"):
+            return FakeResp({
+                "id": "PAYPAL_ORDER_2",
+                "links": [{"rel": "approve", "href": "https://paypal.test/approve"}],
+            })
+        if url.endswith("/v2/checkout/orders/PAYPAL_ORDER_2/capture"):
+            return FakeResp({
+                "id": "PAYPAL_ORDER_2",
+                "status": "COMPLETED",
+                "purchase_units": [{
+                    "custom_id": user["user"]["id"],
+                    "reference_id": "premium",
+                }],
+            })
+        raise AssertionError(f"Unexpected PayPal URL: {url}")
+
+    monkeypatch.setattr(main.requests, "post", fake_post)
+
+    order_response = client.post(
+        "/api/paypal/create-order",
+        json={"plano": "premium"},
+        headers=headers,
+    )
+    assert order_response.status_code == 200
+
+    capture_response = client.post("/api/paypal/capture/PAYPAL_ORDER_2", headers=headers)
+
+    assert capture_response.status_code == 200
+    me_response = client.get("/api/me", headers=headers)
+    assert me_response.json()["user"]["plano"] == "premium"
+
+    export_response = client.get("/api/me/export", headers=headers)
+    checkout_sessions = export_response.json()["checkout_sessions"]
+    paypal_session = next(session for session in checkout_sessions if session["provider_session_id"] == "PAYPAL_ORDER_2")
+    assert paypal_session["status"] == "completed"
+
+
 def test_mercadopago_pix_requires_auth_and_server_side_plan_price(tmp_path, monkeypatch):
     client, main = build_client(tmp_path)
     created_payments = []
+    created_headers = []
 
     class FakeResp:
         def raise_for_status(self):
@@ -109,6 +228,7 @@ def test_mercadopago_pix_requires_auth_and_server_side_plan_price(tmp_path, monk
 
     def fake_post(url, json=None, headers=None, timeout=None, **kwargs):
         created_payments.append(json)
+        created_headers.append(headers)
         return FakeResp()
 
     monkeypatch.setattr(main.requests, "post", fake_post)
@@ -130,6 +250,8 @@ def test_mercadopago_pix_requires_auth_and_server_side_plan_price(tmp_path, monk
     assert response.status_code == 200
     assert created_payments[0]["transaction_amount"] == 49.90
     assert created_payments[0]["external_reference"] == f"{user['user']['id']}:premium"
+    assert created_payments[0]["notification_url"] == "https://hypersecit.com.br/api/mercadopago/webhook?source_news=webhooks"
+    assert created_headers[0]["X-Idempotency-Key"]
 
 
 def test_authenticated_user_can_export_and_delete_own_data(tmp_path):

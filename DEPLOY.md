@@ -29,6 +29,8 @@ ADMIN_TOKEN=<token forte>
 STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
 STRIPE_PRICE_VIP=<price_...>
+STRIPE_LOOKUP_KEY_PREMIUM=seufuturo_premium_monthly
+STRIPE_LOOKUP_KEY_VIP=seufuturo_vip_monthly
 STRIPE_WEBHOOK_SECRET=<whsec_...>
 ```
 
@@ -97,7 +99,7 @@ Variáveis de ambiente importantes (backend):
 - `HOST` - host (padrão 0.0.0.0)
 - `HOROSCOPO_DB_PATH` - caminho para o DB SQLite
 - `APP_BASE_URL` - URL base usada em callbacks e links
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM`, `STRIPE_PRICE_VIP` - se usar Stripe
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM`, `STRIPE_PRICE_VIP`, `STRIPE_LOOKUP_KEY_PREMIUM`, `STRIPE_LOOKUP_KEY_VIP` - se usar Stripe
 
 Pagamento — como configurar e vincular provedores
 

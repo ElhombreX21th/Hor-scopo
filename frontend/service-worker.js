@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seufuturo-v5';
+const CACHE_NAME = 'seufuturo-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -63,7 +63,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For other requests, cache first, then network
+  // Navigation requests must prefer the network so users do not keep stale checkout UI.
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type !== 'error') {
+            const clonedResponse = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, clonedResponse);
+            });
+          }
+
+          return response;
+        })
+        .catch(() => caches.match(request).then((response) => response || caches.match('/index.html')))
+    );
+    return;
+  }
+
+  // For static assets, cache first, then network.
   event.respondWith(
     caches.match(request).then((response) => {
       if (response) {

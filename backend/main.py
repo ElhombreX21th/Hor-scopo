@@ -54,11 +54,15 @@ ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 STRIPE_API_VERSION = "2026-02-25.clover"
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
 STRIPE_PRICE_IDS = {
-    "premium": os.environ.get("STRIPE_PRICE_PREMIUM", ""),
-    "vip": os.environ.get("STRIPE_PRICE_VIP", ""),
+    "premium": os.environ.get("STRIPE_PRICE_PREMIUM", "").strip(),
+    "vip": os.environ.get("STRIPE_PRICE_VIP", "").strip(),
+}
+STRIPE_PRICE_LOOKUP_KEYS = {
+    "premium": os.environ.get("STRIPE_LOOKUP_KEY_PREMIUM", "seufuturo_premium_monthly").strip(),
+    "vip": os.environ.get("STRIPE_LOOKUP_KEY_VIP", "seufuturo_vip_monthly").strip(),
 }
 BEARER_AUTH_TYPE = "bearer"
 
@@ -124,6 +128,11 @@ PLANOS_VALIDOS = {"basic": 0, "premium": 1, "vip": 2}
 PLAN_PRICES_BRL = {
     "premium": "49.90",
     "vip": "150.00",
+}
+PAYMENT_PROVIDER_LABELS = {
+    "stripe": "Cartão (Stripe)",
+    "paypal": "PayPal",
+    "pix": "PIX",
 }
 ACTIVE_SUBSCRIPTION_STATUSES = {"active", "trialing"}
 SIGNO_ALIASES = {
@@ -329,6 +338,44 @@ def paid_plan_price_brl(plano: str):
     return plano_normalizado, PLAN_PRICES_BRL[plano_normalizado]
 
 
+def stripe_checkout_configured():
+    return bool(
+        stripe is not None
+        and STRIPE_SECRET_KEY
+        and all(STRIPE_PRICE_IDS.get(plano) or STRIPE_PRICE_LOOKUP_KEYS.get(plano) for plano in PLAN_PRICES_BRL)
+    )
+
+
+def paypal_checkout_configured():
+    return bool(os.environ.get("PAYPAL_CLIENT_ID", "").strip() and os.environ.get("PAYPAL_SECRET", "").strip())
+
+
+def pix_checkout_configured():
+    mp_token = os.environ.get("MP_ACCESS_TOKEN", "").strip()
+    return mp_token.startswith(("APP_USR-", "TEST-"))
+
+
+def payment_provider_config():
+    providers = {
+        "stripe": {
+            "enabled": stripe_checkout_configured(),
+            "label": PAYMENT_PROVIDER_LABELS["stripe"],
+        },
+        "paypal": {
+            "enabled": paypal_checkout_configured(),
+            "label": PAYMENT_PROVIDER_LABELS["paypal"],
+        },
+        "pix": {
+            "enabled": pix_checkout_configured(),
+            "label": PAYMENT_PROVIDER_LABELS["pix"],
+        },
+    }
+    return {
+        "providers": providers,
+        "available_providers": [provider for provider, info in providers.items() if info["enabled"]],
+    }
+
+
 def record_checkout_session(user_id: str, plano: str, provider: str, provider_session_id: str, checkout_url: Optional[str] = None):
     session_id = str(uuid.uuid4())
     with get_db() as conn:
@@ -341,6 +388,34 @@ def record_checkout_session(user_id: str, plano: str, provider: str, provider_se
             (session_id, user_id, plano, "pending", provider, provider_session_id, checkout_url, agora_iso()),
         )
     return session_id
+
+
+def checkout_session_for_provider(provider: str, provider_session_id: str, user_id: Optional[str] = None):
+    query = """
+        SELECT id, user_id, plano, status
+        FROM checkout_sessions
+        WHERE provider = ? AND provider_session_id = ?
+    """
+    params = [provider, provider_session_id]
+    if user_id:
+        query += " AND user_id = ?"
+        params.append(user_id)
+
+    with get_db() as conn:
+        row = conn.execute(query, tuple(params)).fetchone()
+        return dict(row) if row else None
+
+
+def mark_checkout_session_completed(provider: str, provider_session_id: str):
+    with get_db() as conn:
+        conn.execute(
+            """
+            UPDATE checkout_sessions
+            SET status = 'completed', completed_at = ?
+            WHERE provider = ? AND provider_session_id = ?
+            """,
+            (agora_iso(), provider, provider_session_id),
+        )
 
 
 def parse_payment_reference(reference: Optional[str]):
@@ -362,12 +437,41 @@ def normalizar_signo(signo: str):
 
 
 def stripe_price_for_plan(plano: str):
+    plano = normalizar_plano(plano)
     price_id = STRIPE_PRICE_IDS.get(plano, "")
+    if not price_id:
+        return resolve_stripe_price_by_lookup_key(plano)
+    return price_id
+
+
+def resolve_stripe_price_by_lookup_key(plano: str):
+    lookup_key = STRIPE_PRICE_LOOKUP_KEYS.get(plano, "")
+    if not lookup_key:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Lookup key Stripe do plano {plano} não configurada.",
+        )
+
+    ensure_stripe_configured()
+    try:
+        prices = stripe.Price.list(lookup_keys=[lookup_key], active=True, limit=1)
+    except Exception as exc:
+        logger.warning("stripe_price_lookup_failed: plano=%s lookup_key=%s error=%s", plano, lookup_key, exc)
+        raise HTTPException(
+            status_code=502,
+            detail=f"Não foi possível consultar o preço Stripe do plano {plano}.",
+        )
+
+    data = _stripe_obj_value(prices, "data", []) or []
+    price = data[0] if data else None
+    price_id = _stripe_obj_value(price, "id") if price else None
     if not price_id:
         raise HTTPException(
             status_code=503,
-            detail=f"Preço Stripe do plano {plano} não configurado.",
+            detail=f"Preço Stripe do plano {plano} não encontrado. Configure STRIPE_PRICE_{plano.upper()} ou crie um Price ativo com lookup_key {lookup_key}.",
         )
+
+    STRIPE_PRICE_IDS[plano] = price_id
     return price_id
 
 
@@ -692,7 +796,29 @@ async def paypal_capture_order(order_id: str, user=Depends(get_current_user)):
     try:
         resp = requests.post(url, headers=headers, timeout=10)
         resp.raise_for_status()
-        return resp.json()
+        data = resp.json()
+
+        if data.get("status") == "COMPLETED":
+            checkout_session = checkout_session_for_provider("paypal", order_id, user["id"])
+            plan_from_session = checkout_session.get("plano") if checkout_session else None
+            plan_from_capture = None
+            for unit in data.get("purchase_units", []) or []:
+                if unit.get("custom_id") == user["id"]:
+                    plan_from_capture = unit.get("reference_id")
+                    break
+
+            selected_plan = plan_from_session or plan_from_capture
+            try:
+                selected_plan = normalizar_plano(selected_plan or "")
+            except HTTPException:
+                selected_plan = None
+
+            if selected_plan and selected_plan != "basic":
+                set_user_subscription(user["id"], selected_plan, "active")
+                mark_checkout_session_completed("paypal", order_id)
+                logger.info("paypal_capture_completed: order=%s user=%s plano=%s", order_id, user["id"], selected_plan)
+
+        return data
     except requests.RequestException:
         raise HTTPException(status_code=502, detail="Falha ao capturar ordem PayPal.")
 
@@ -785,6 +911,7 @@ async def paypal_webhook(request: Request):
                     if status in {"COMPLETED", "APPROVED"} and user_id:
                         # marcar assinatura ativa
                         set_user_subscription(user_id, plano or 'premium', 'active')
+                        mark_checkout_session_completed("paypal", order_id)
                         logger.info("paypal_order_completed: order=%s user=%s plano=%s", order_id, user_id, plano)
                     elif status in {"VOIDED", "CANCELLED"} and user_id:
                         # ordem cancelada/voided -> downgrade
@@ -808,16 +935,21 @@ async def mercadopago_create_pix(req: MPCreatePixModel, user=Depends(get_current
     Requer `MP_ACCESS_TOKEN` nas variáveis de ambiente.
     """
     plano, amount = paid_plan_price_brl(req.plano)
-    mp_token = os.environ.get("MP_ACCESS_TOKEN", "")
-    if not mp_token:
+    mp_token = os.environ.get("MP_ACCESS_TOKEN", "").strip()
+    if not pix_checkout_configured():
         raise HTTPException(status_code=503, detail="Mercado Pago não configurado (MP_ACCESS_TOKEN).")
     url = "https://api.mercadopago.com/v1/payments"
-    headers = {"Authorization": f"Bearer {mp_token}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bearer {mp_token}",
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": str(uuid.uuid4()),
+    }
     body = {
         "transaction_amount": float(Decimal(amount)),
         "payment_method_id": "pix",
         "description": f"Assinatura SeuFuturo - {plano.upper()}",
         "external_reference": f"{user['id']}:{plano}",
+        "notification_url": f"{APP_BASE_URL}/api/mercadopago/webhook?source_news=webhooks",
     }
 
     body["payer"] = {"email": req.email or user["email"]}
@@ -891,6 +1023,7 @@ async def mercadopago_webhook(request: Request):
                     if 'VIP' in (description or '').upper():
                         plano = 'vip'
                     set_user_subscription(user_id, plano, 'active')
+                    mark_checkout_session_completed("mercadopago", str(payment_id))
                     logger.info("mercadopago_payment_approved: payment=%s user=%s plano=%s", payment_id, user_id, plano)
                 elif user_id and status in {'refunded', 'cancelled'}:
                     downgrade_user_subscription(user_id)
@@ -921,15 +1054,7 @@ def _handle_checkout_completed(session):
     set_user_subscription(user_id, plano, "active", customer_id, subscription_id)
     logger.info("checkout_completed: user=%s plano=%s customer=%s subscription=%s", user_id, plano, customer_id, subscription_id)
 
-    with get_db() as conn:
-        conn.execute(
-            """
-            UPDATE checkout_sessions
-            SET status = 'completed', completed_at = ?
-            WHERE provider_session_id = ?
-            """,
-            (agora_iso(), _stripe_obj_value(session, "id")),
-        )
+    mark_checkout_session_completed("stripe", _stripe_obj_value(session, "id"))
 
 
 def _subscription_price_id(subscription):
@@ -945,12 +1070,21 @@ def _handle_subscription_changed(subscription):
     status = _stripe_obj_value(subscription, "status", "")
     subscription_id = _stripe_obj_value(subscription, "id")
     customer_id = _stripe_obj_value(subscription, "customer")
+    metadata = _stripe_obj_value(subscription, "metadata", {}) or {}
 
     if status not in ACTIVE_SUBSCRIPTION_STATUSES:
         downgrade_user_subscription_by_stripe(subscription_id, customer_id)
         return
 
-    plano = plan_for_stripe_price(_subscription_price_id(subscription))
+    plano = None
+    metadata_plan = metadata.get("plano") if isinstance(metadata, dict) else None
+    if metadata_plan:
+        try:
+            plano = normalizar_plano(metadata_plan)
+        except HTTPException:
+            plano = None
+    if not plano:
+        plano = plan_for_stripe_price(_subscription_price_id(subscription))
     if not plano:
         return
 
@@ -1135,6 +1269,11 @@ async def login(req: LoginModel):
 @app.get("/api/me")
 async def me(user=Depends(get_current_user)):
     return {"user": user_to_payload(user)}
+
+
+@app.get("/api/payments/config")
+async def payments_config():
+    return payment_provider_config()
 
 
 @app.get("/api/me/export")
