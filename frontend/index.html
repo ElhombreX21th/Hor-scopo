@@ -420,6 +420,29 @@
             font-size: 0.875rem;
             color: #ffb6c1;
         }
+
+        .pix-code {
+            word-break: break-word;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.85rem 1rem;
+            border-radius: 16px;
+            border: 1px dashed rgba(255, 192, 203, 0.35);
+            color: #f8f4ff;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-top: 0.75rem;
+        }
+
+        .page-footer {
+            margin: 2rem auto 0;
+            padding: 1rem 0;
+            width: min(100%, 960px);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.82rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
         
         .btn-premium {
             background: linear-gradient(135deg, #ff1493, #ff69b4);
@@ -770,7 +793,7 @@
             <div class="flex items-start justify-between gap-4 mb-4">
                 <div>
                     <h2 class="modal-title" id="checkoutTitle">Ativar plano</h2>
-                    <p class="text-gray-300 text-sm" id="checkoutCopy">Serás encaminhado para o checkout seguro da Stripe para concluir a assinatura.</p>
+                    <p class="text-gray-300 text-sm" id="checkoutCopy">Serás encaminhado para o checkout seguro. Podes pagar com cartão, PayPal ou PIX.</p>
                 </div>
                 <button class="soft-btn" type="button" id="closeCheckoutBtn" aria-label="Fechar">×</button>
             </div>
@@ -789,10 +812,15 @@
             <div id="pixArea" class="mt-4 hidden text-center">
                 <div id="pixLoading" class="text-sm text-gray-300">A gerar QR Code PIX...</div>
                 <div id="pixImage" class="mt-3"></div>
+                <div id="pixCode" class="pix-code hidden"></div>
                 <div id="pixInfo" class="text-xs text-gray-400 mt-2"></div>
             </div>
         </div>
     </div>
+
+    <footer class="page-footer">
+        <p>SeuFuturo™ - Marca registrada. © 2026 Todos os direitos reservados.</p>
+    </footer>
 
     <script>
         const SIGNOS = ['Aries', 'Touro', 'Gémeos', 'Cancro', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes'];
@@ -1233,19 +1261,33 @@
                 if (!res.ok) throw new Error(data.detail || 'Erro PIX');
 
                 pixLoading.classList.add('hidden');
+                const pixCodeContainer = document.getElementById('pixCode');
+                pixCodeContainer.classList.add('hidden');
+                pixCodeContainer.innerHTML = '';
+
                 if (data.qr_code_base64) {
                     const img = document.createElement('img');
                     img.src = 'data:image/png;base64,' + data.qr_code_base64;
                     img.alt = 'PIX QR Code';
                     img.style.maxWidth = '220px';
                     pixImage.appendChild(img);
-                    pixInfo.textContent = `ID: ${data.id} — estado: ${data.status}`;
-                } else if (data.qr_code) {
-                    pixImage.textContent = data.qr_code;
-                    pixInfo.textContent = `ID: ${data.id} — estado: ${data.status}`;
-                } else {
+                }
+
+                if (data.qr_code) {
+                    pixCodeContainer.innerHTML = `
+                        <strong style="display:block; margin-bottom:0.45rem; color:#ffb6c1;">Código PIX</strong>
+                        <span style="font-family:monospace; display:block;">${data.qr_code}</span>
+                    `;
+                    pixCodeContainer.classList.remove('hidden');
+                }
+
+                if (!data.qr_code_base64 && !data.qr_code) {
                     throw new Error('Resposta inesperada do servidor PIX');
                 }
+
+                pixInfo.textContent = data.qr_code
+                    ? 'Escaneie o QR Code ou copie o código PIX acima para pagar.'
+                    : `Status: ${data.status || 'Indisponível'}`;
             } catch (err) {
                 pixLoading.classList.add('hidden');
                 pixInfo.textContent = err.message || 'Erro ao gerar PIX';
