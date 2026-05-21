@@ -87,6 +87,19 @@ def test_paypal_order_requires_auth_and_server_side_plan_price(tmp_path, monkeyp
     assert created_orders[0]["purchase_units"][0]["reference_id"] == "vip"
 
 
+def test_payment_config_reports_all_configured_public_providers(tmp_path):
+    client, _ = build_client(tmp_path)
+
+    response = client.get("/api/payments/config")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "stripe": True,
+        "paypal": True,
+        "pix": True,
+    }
+
+
 def test_mercadopago_pix_requires_auth_and_server_side_plan_price(tmp_path, monkeypatch):
     client, main = build_client(tmp_path)
     created_payments = []

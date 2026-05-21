@@ -65,14 +65,14 @@ Produção com domínio e HTTPS:
 
 4. Configure um proxy reverso (nginx/Caddy) para mapear o domínio próprio final:
 
-- `https://SEU-DOMINIO-SEUFUTURO` -> frontend na raiz
-- `https://SEU-DOMINIO-SEUFUTURO/api/*` -> backend
-- `https://SEU-DOMINIO-SEUFUTURO/docs` e `https://SEU-DOMINIO-SEUFUTURO/openapi.json` -> backend
+- `https://hypersecit.com.br` -> frontend na raiz
+- `https://hypersecit.com.br/api/*` -> backend
+- `https://hypersecit.com.br/docs` e `https://hypersecit.com.br/openapi.json` -> backend
 
 5. Recomendado: usar Caddy ou Certbot + nginx para TLS automático. Exemplo com Caddy (Caddyfile):
 
 ```
-SEU-DOMINIO-SEUFUTURO {
+hypersecit.com.br {
   handle /api/* {
     reverse_proxy localhost:8000
   }

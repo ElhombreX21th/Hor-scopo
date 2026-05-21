@@ -12,6 +12,9 @@ def build_client(tmp_path):
     os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
     os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
     os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    os.environ.pop("PAYPAL_CLIENT_ID", None)
+    os.environ.pop("PAYPAL_SECRET", None)
+    os.environ.pop("MP_ACCESS_TOKEN", None)
     os.environ.pop("STRIPE_WEBHOOK_SECRET", None)
 
     backend_dir = Path(__file__).resolve().parent
@@ -43,6 +46,37 @@ def test_paid_plan_requires_authenticated_subscription(tmp_path):
 
     assert paid_response.status_code == 402
     assert paid_response.json()["detail"] == "Plano vip requer assinatura ativa."
+
+
+def test_auth_validation_errors_are_human_readable(tmp_path):
+    client = build_client(tmp_path)
+
+    login_response = client.post(
+        "/api/auth/login",
+        json={"email": "admin", "password": "senha-segura-123"},
+    )
+    assert login_response.status_code == 422
+    assert login_response.json()["detail"] == "Email inválido."
+
+    register_response = client.post(
+        "/api/auth/register",
+        json={"nome": "Admin", "email": "admin", "password": "senha-segura-123", "signo": "Aries"},
+    )
+    assert register_response.status_code == 422
+    assert register_response.json()["detail"] == "Email inválido."
+
+
+def test_payment_config_reports_available_public_providers(tmp_path):
+    client = build_client(tmp_path)
+
+    response = client.get("/api/payments/config")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "stripe": True,
+        "paypal": False,
+        "pix": False,
+    }
 
 
 def test_register_checkout_webhook_unlocks_premium_content(tmp_path, monkeypatch):

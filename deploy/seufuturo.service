@@ -5,10 +5,10 @@ After=network.target
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/horoscopo
+WorkingDirectory=/opt/seufuturo
 Environment=HOST=0.0.0.0
 Environment=PORT=8000
-Environment=HOROSCOPO_DB_PATH=/var/www/horoscopo/backend/horoscopo.db
+Environment=HOROSCOPO_DB_PATH=/opt/seufuturo/backend/horoscopo.db
 Environment=APP_BASE_URL=https://hypersecit.com.br
 Environment=ALLOWED_ORIGINS=https://hypersecit.com.br
 Environment=ADMIN_TOKEN=CHANGEME

@@ -867,6 +867,31 @@
         let planoSelecionado = sessao?.user?.plano || 'basic';
         let planoPendenteUpgrade = null;
         let checkoutPlano = null;
+        let paymentConfig = { stripe: false, paypal: false, pix: false };
+
+        function formatApiError(detail, fallback = 'Não foi possível concluir a ação.') {
+            if (!detail) return fallback;
+            if (typeof detail === 'string') return detail;
+
+            if (Array.isArray(detail)) {
+                if (detail.some(item => Array.isArray(item?.loc) && item.loc.includes('email'))) {
+                    return 'Email inválido.';
+                }
+
+                const firstMessage = detail.find(item => typeof item?.msg === 'string')?.msg;
+                return firstMessage || fallback;
+            }
+
+            if (typeof detail === 'object') {
+                return detail.message || detail.detail || detail.error || fallback;
+            }
+
+            return String(detail);
+        }
+
+        function apiErrorMessage(data, fallback) {
+            return formatApiError(data?.detail || data?.message || data?.error, fallback);
+        }
 
         function carregarSessao() {
             try {
@@ -916,6 +941,46 @@
                 ...options,
                 headers
             });
+        }
+
+        function provedorPagamentoAtivo(provider) {
+            return Boolean(paymentConfig[provider]);
+        }
+
+        function atualizarCheckoutProviders() {
+            const providers = [
+                ['stripe', document.getElementById('confirmCheckoutBtn')],
+                ['paypal', document.getElementById('paypalCheckoutBtn')],
+                ['pix', document.getElementById('pixCheckoutBtn')],
+            ];
+
+            providers.forEach(([provider, button]) => {
+                if (!button) return;
+                const enabled = provedorPagamentoAtivo(provider);
+                button.disabled = !enabled;
+                button.setAttribute('aria-disabled', String(!enabled));
+                button.classList.toggle('opacity-50', !enabled);
+                button.classList.toggle('cursor-not-allowed', !enabled);
+            });
+        }
+
+        async function carregarPaymentConfig() {
+            try {
+                const response = await apiFetch('/api/payments/config', {}, false);
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(apiErrorMessage(data, 'Não foi possível verificar os meios de pagamento.'));
+                }
+                paymentConfig = {
+                    stripe: Boolean(data.stripe),
+                    paypal: Boolean(data.paypal),
+                    pix: Boolean(data.pix),
+                };
+            } catch (error) {
+                paymentConfig = { stripe: false, paypal: false, pix: false };
+                console.warn('Configuração de pagamentos indisponível.', error);
+            }
+            atualizarCheckoutProviders();
         }
 
         function atualizarContaUI() {
@@ -1088,7 +1153,7 @@
                 }
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Erro ao buscar horóscopo');
+                    throw new Error(apiErrorMessage(data, 'Erro ao buscar horóscopo'));
                 }
 
                 renderizarHoroscopo(data);
@@ -1148,7 +1213,7 @@
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Falha na autenticação.');
+                    throw new Error(apiErrorMessage(data, 'Falha na autenticação.'));
                 }
 
                 salvarSessao(data);
@@ -1170,7 +1235,8 @@
             const info = planoInfo(plano);
             document.getElementById('checkoutPlanName').textContent = info.nome;
             document.getElementById('checkoutPlanPrice').textContent = info.preco;
-            document.getElementById('checkoutMessage').textContent = detalhe || 'Pagamento processado com segurança pela Stripe.';
+            atualizarCheckoutProviders();
+            document.getElementById('checkoutMessage').textContent = formatApiError(detalhe, 'Escolhe um meio de pagamento disponível.');
             document.getElementById('checkoutModal').classList.remove('hidden');
         }
 
@@ -1180,6 +1246,10 @@
 
         async function confirmarCheckout() {
             if (!checkoutPlano) return;
+            if (!provedorPagamentoAtivo('stripe')) {
+                document.getElementById('checkoutMessage').textContent = 'Cartão/Stripe não está configurado no servidor.';
+                return;
+            }
             if (!sessao) {
                 fecharCheckoutModal();
                 abrirAuthModal(checkoutPlano);
@@ -1197,7 +1267,7 @@
                 const sessionData = await sessionResponse.json().catch(() => ({}));
 
                 if (!sessionResponse.ok) {
-                    throw new Error(sessionData.detail || 'Não foi possível criar checkout.');
+                    throw new Error(apiErrorMessage(sessionData, 'Não foi possível criar checkout.'));
                 }
 
                 if (!sessionData.checkout_url) {
@@ -1214,6 +1284,10 @@
         // PayPal flow: cria ordem no backend e redireciona para aprovação
         async function startPayPalFromModal() {
             if (!checkoutPlano) return;
+            if (!provedorPagamentoAtivo('paypal')) {
+                document.getElementById('checkoutMessage').textContent = 'PayPal não está configurado no servidor.';
+                return;
+            }
             try {
                 document.getElementById('checkoutMessage').textContent = 'A criar ordem PayPal...';
                 const returnUrl = `${window.location.origin}/confirmacao-assinatura?provider=paypal`;
@@ -1224,7 +1298,7 @@
                 });
 
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || 'Erro PayPal');
+                if (!res.ok) throw new Error(apiErrorMessage(data, 'Erro PayPal'));
 
                 const approve = data.links && data.links.find(l => l.rel === 'approve');
                 if (approve && approve.href) {
@@ -1234,13 +1308,17 @@
 
                 throw new Error('Link de aprovação PayPal não recebido.');
             } catch (err) {
-                document.getElementById('checkoutMessage').textContent = err.message || 'Erro PayPal';
+                document.getElementById('checkoutMessage').textContent = formatApiError(err.message, 'Erro PayPal');
             }
         }
 
         // PIX (Mercado Pago) flow: cria pagamento e mostra QR code
         async function startPixFromModal() {
             if (!checkoutPlano) return;
+            if (!provedorPagamentoAtivo('pix')) {
+                document.getElementById('checkoutMessage').textContent = 'PIX/Mercado Pago não está configurado no servidor.';
+                return;
+            }
             const pixArea = document.getElementById('pixArea');
             const pixLoading = document.getElementById('pixLoading');
             const pixImage = document.getElementById('pixImage');
@@ -1258,7 +1336,7 @@
                 });
 
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.detail || 'Erro PIX');
+                if (!res.ok) throw new Error(apiErrorMessage(data, 'Erro PIX'));
 
                 pixLoading.classList.add('hidden');
                 const pixCodeContainer = document.getElementById('pixCode');
@@ -1290,7 +1368,7 @@
                     : `Status: ${data.status || 'Indisponível'}`;
             } catch (err) {
                 pixLoading.classList.add('hidden');
-                pixInfo.textContent = err.message || 'Erro ao gerar PIX';
+                pixInfo.textContent = formatApiError(err.message, 'Erro ao gerar PIX');
             }
         }
 
@@ -1305,7 +1383,7 @@
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    throw new Error(data.detail || 'Não foi possível abrir a gestão da assinatura.');
+                    throw new Error(apiErrorMessage(data, 'Não foi possível abrir a gestão da assinatura.'));
                 }
 
                 window.location.href = data.portal_url;
@@ -1398,6 +1476,8 @@
         renderPlanos();
         atualizarContaUI();
         atualizarPlanoSelecionado();
+        atualizarCheckoutProviders();
+        carregarPaymentConfig();
         selecionarSigno(sessao?.user?.signo || 'Aries');
         carregarMetricas();
         sincronizarConta().then(() => {

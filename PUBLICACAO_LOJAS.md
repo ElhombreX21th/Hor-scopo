@@ -65,7 +65,7 @@ npm install -g @capacitor/cli
 npm install @capacitor/core @capacitor/ios
 
 # Criar projeto iOS
-npx cap init seufuturo 'app.seufuturo.mobile'
+npx cap init seufuturo 'br.com.hypersecit.seufuturo'
 
 # Adicionar iOS
 npx cap add ios
@@ -84,7 +84,7 @@ npx cap open ios
 npm install -g cordova
 
 # Criar projeto
-cordova create SeuFuturoApp app.seufuturo.mobile 'SeuFuturo'
+cordova create SeuFuturoApp br.com.hypersecit.seufuturo 'SeuFuturo'
 
 # Adicionar plataforma iOS
 cordova platform add ios
@@ -176,7 +176,7 @@ cd frontend
 bubblewrap init --manifest manifest.json
 
 # Será solicitado:
-# - Package name: app.seufuturo.mobile
+# - Package name: br.com.hypersecit.seufuturo
 # - App name: SeuFuturo
 # - Versão
 # - Domínio da app
@@ -218,7 +218,7 @@ bubblewrap build --release --output-format aab
 npm install @capacitor/core @capacitor/ios
 
 # 2. Criar aplicativo iOS
-npx cap init seufuturo 'app.seufuturo.mobile'
+npx cap init seufuturo 'br.com.hypersecit.seufuturo'
 
 # 3. Copiar arquivos web
 cp -r frontend/* www/

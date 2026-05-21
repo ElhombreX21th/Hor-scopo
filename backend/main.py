@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import hashlib
@@ -13,6 +14,7 @@ import uuid
 from decimal import Decimal
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import requests
 import logging
 
@@ -63,6 +65,22 @@ STRIPE_PRICE_IDS = {
 BEARER_AUTH_TYPE = "bearer"
 
 app = FastAPI(title=f"SaaS {APP_NAME}")
+
+
+def validation_error_message(errors):
+    for error in errors:
+        loc = error.get("loc", [])
+        if "email" in loc:
+            return "Email inválido."
+    return "Dados inválidos. Verifica os campos enviados."
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": validation_error_message(exc.errors())},
+    )
 
 # Logging
 log_path_env = os.environ.get("HOROSCOPO_LOG_PATH")
@@ -1283,6 +1301,15 @@ async def obter_metricas():
         "planos_disponiveis": 3,
         "app_instalavel": True,
         "categorias": ["diario", "amor", "carreira", "sorte"]
+    }
+
+
+@app.get("/api/payments/config")
+async def payments_config():
+    return {
+        "stripe": bool(stripe is not None and STRIPE_SECRET_KEY and STRIPE_PRICE_IDS.get("premium") and STRIPE_PRICE_IDS.get("vip")),
+        "paypal": bool(os.environ.get("PAYPAL_CLIENT_ID") and os.environ.get("PAYPAL_SECRET")),
+        "pix": bool(os.environ.get("MP_ACCESS_TOKEN")),
     }
 
 

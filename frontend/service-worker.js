@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seufuturo-v5';
+const CACHE_NAME = 'seufuturo-v6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -63,7 +63,28 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For other requests, cache first, then network
+  // HTML must be network-first so fixes to login/payment flows are not trapped
+  // behind an old PWA cache.
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200 && response.type !== 'error') {
+            const responseForRequest = response.clone();
+            const responseForIndex = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseForRequest);
+              cache.put('/index.html', responseForIndex);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((response) => response || caches.match('/index.html')))
+    );
+    return;
+  }
+
+  // For static assets, cache first, then network.
   event.respondWith(
     caches.match(request).then((response) => {
       if (response) {
@@ -84,12 +105,7 @@ self.addEventListener('fetch', (event) => {
 
           return response;
         })
-        .catch(() => {
-          // Return a custom offline page if needed
-          if (request.destination === 'document') {
-            return caches.match('/index.html');
-          }
-        });
+        .catch(() => response);
     })
   );
 });

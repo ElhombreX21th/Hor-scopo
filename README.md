@@ -17,7 +17,7 @@ Não use domínios ou projetos de outros produtos para este app. O domínio `hyp
 ## Estrutura
 
 ```text
-Horoscopo/
+SeuFuturo/
 ├── backend/
 │   ├── main.py              # API, autenticação, paywall, Stripe e LGPD
 │   ├── requirements.txt      # Dependências Python
