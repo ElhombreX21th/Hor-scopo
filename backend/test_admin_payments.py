@@ -10,6 +10,12 @@ def build_client(tmp_path):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
     os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
     os.environ["ADMIN_TOKEN"] = "admintoken123"
+    os.environ.pop("VERCEL", None)
+    os.environ.pop("DATABASE_URL", None)
+    os.environ.pop("POSTGRES_URL", None)
+    os.environ.pop("POSTGRES_URL_NON_POOLING", None)
+    os.environ.pop("POSTGRES_PRISMA_URL", None)
+    os.environ.pop("SUPABASE_DB_URL", None)
     backend_dir = Path(__file__).resolve().parent
     if str(backend_dir) not in sys.path:
         sys.path.insert(0, str(backend_dir))

@@ -2,6 +2,7 @@ import importlib
 import json
 import os
 import sys
+import uuid
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -17,6 +18,11 @@ def build_client(tmp_path):
     os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
     os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
     os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    os.environ.pop("DATABASE_URL", None)
+    os.environ.pop("POSTGRES_URL", None)
+    os.environ.pop("POSTGRES_URL_NON_POOLING", None)
+    os.environ.pop("POSTGRES_PRISMA_URL", None)
+    os.environ.pop("SUPABASE_DB_URL", None)
     os.environ.pop("STRIPE_WEBHOOK_SECRET", None)
 
     backend_dir = Path(__file__).resolve().parent
@@ -143,6 +149,57 @@ def test_mercadopago_pix_requires_auth_and_server_side_plan_price(tmp_path, monk
     assert response.status_code == 200
     assert created_payments[0]["transaction_amount"] == 49.90
     assert created_payments[0]["external_reference"] == f"{user['user']['id']}:premium"
+
+
+def test_mercadopago_pix_omits_empty_payer_fields_and_returns_ticket_url(tmp_path, monkeypatch):
+    client, main = build_client(tmp_path)
+    created_payments = []
+    created_headers = []
+
+    class FakeResp:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "status": "pending",
+                "id": 98765,
+                "point_of_interaction": {
+                    "transaction_data": {
+                        "qr_code": "pix-copy-paste",
+                        "ticket_url": "https://www.mercadopago.com.br/payments/98765/ticket",
+                    }
+                },
+            }
+
+    def fake_post(url, json=None, headers=None, timeout=None, **kwargs):
+        created_payments.append(json)
+        created_headers.append(headers)
+        return FakeResp()
+
+    monkeypatch.setattr(main.requests, "post", fake_post)
+
+    user = client.post(
+        "/api/auth/register",
+        json={
+            "nome": "Assinante",
+            "email": "assinante@example.com",
+            "password": "senha-segura-123",
+            "signo": "Aries",
+        },
+    ).json()
+
+    response = client.post(
+        "/api/mercadopago/create-pix",
+        json={"plano": "premium"},
+        headers=auth_headers(user["access_token"]),
+    )
+
+    assert response.status_code == 200
+    payer = created_payments[0]["payer"]
+    assert payer == {"email": "assinante@example.com", "first_name": "Assinante"}
+    uuid.UUID(created_headers[0]["X-Idempotency-Key"])
+    assert response.json()["ticket_url"] == "https://www.mercadopago.com.br/payments/98765/ticket"
 
 
 def test_authenticated_user_can_export_and_delete_own_data(tmp_path):

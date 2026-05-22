@@ -893,9 +893,18 @@
             return formatApiError(data?.detail || data?.message || data?.error, fallback);
         }
 
+        function sessaoPareceValida(valor) {
+            return Boolean(valor?.access_token && valor?.user?.id && valor?.user?.email);
+        }
+
         function carregarSessao() {
             try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEY));
+                const valor = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (!sessaoPareceValida(valor)) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    return null;
+                }
+                return valor;
             } catch (error) {
                 localStorage.removeItem(STORAGE_KEY);
                 return null;
@@ -903,6 +912,9 @@
         }
 
         function salvarSessao(novaSessao) {
+            if (!sessaoPareceValida(novaSessao)) {
+                throw new Error('Resposta de autenticação incompleta.');
+            }
             sessao = novaSessao;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(novaSessao));
             atualizarContaUI();
@@ -910,13 +922,16 @@
             atualizarPlanoSelecionado();
         }
 
-        function limparSessao() {
+        function limparSessao(mensagem = '') {
             sessao = null;
             localStorage.removeItem(STORAGE_KEY);
             planoSelecionado = 'basic';
             atualizarContaUI();
             renderPlanos();
             atualizarPlanoSelecionado();
+            if (mensagem) {
+                document.getElementById('accountStatus').textContent = mensagem;
+            }
         }
 
         function planoInfo(planoId) {
@@ -1352,20 +1367,43 @@
                 }
 
                 if (data.qr_code) {
-                    pixCodeContainer.innerHTML = `
-                        <strong style="display:block; margin-bottom:0.45rem; color:#ffb6c1;">Código PIX</strong>
-                        <span style="font-family:monospace; display:block;">${data.qr_code}</span>
-                    `;
+                    const label = document.createElement('strong');
+                    label.style.display = 'block';
+                    label.style.marginBottom = '0.45rem';
+                    label.style.color = '#ffb6c1';
+                    label.textContent = 'Código PIX';
+
+                    const code = document.createElement('span');
+                    code.style.fontFamily = 'monospace';
+                    code.style.display = 'block';
+                    code.textContent = data.qr_code;
+
+                    pixCodeContainer.appendChild(label);
+                    pixCodeContainer.appendChild(code);
                     pixCodeContainer.classList.remove('hidden');
                 }
 
-                if (!data.qr_code_base64 && !data.qr_code) {
+                const pixTicketUrl = data.ticket_url || data.raw?.point_of_interaction?.transaction_data?.ticket_url;
+                if (pixTicketUrl) {
+                    const ticketLink = document.createElement('a');
+                    ticketLink.href = pixTicketUrl;
+                    ticketLink.target = '_blank';
+                    ticketLink.rel = 'noopener noreferrer';
+                    ticketLink.className = 'soft-btn inline-block mt-3';
+                    ticketLink.textContent = 'Abrir PIX no Mercado Pago';
+                    pixCodeContainer.appendChild(ticketLink);
+                    pixCodeContainer.classList.remove('hidden');
+                }
+
+                if (!data.qr_code_base64 && !data.qr_code && !pixTicketUrl) {
                     throw new Error('Resposta inesperada do servidor PIX');
                 }
 
                 pixInfo.textContent = data.qr_code
                     ? 'Escaneie o QR Code ou copie o código PIX acima para pagar.'
-                    : `Status: ${data.status || 'Indisponível'}`;
+                    : pixTicketUrl
+                        ? 'Abra o link do Mercado Pago para pagar com PIX.'
+                        : `Status: ${data.status || 'Indisponível'}`;
             } catch (err) {
                 pixLoading.classList.add('hidden');
                 pixInfo.textContent = formatApiError(err.message, 'Erro ao gerar PIX');
@@ -1398,11 +1436,17 @@
             try {
                 const response = await apiFetch('/api/me');
                 const data = await response.json().catch(() => ({}));
-                if (response.ok && data.user) {
-                    salvarSessao({ ...sessao, user: data.user });
-                    planoSelecionado = data.user.plano;
-                    atualizarPlanoSelecionado();
+                if (response.status === 401) {
+                    limparSessao('Sessão expirada. Entra novamente.');
+                    return;
                 }
+                if (!response.ok || !data.user) {
+                    document.getElementById('accountStatus').textContent = apiErrorMessage(data, 'Não foi possível sincronizar a conta.');
+                    return;
+                }
+                salvarSessao({ ...sessao, user: data.user });
+                planoSelecionado = data.user.plano;
+                atualizarPlanoSelecionado();
             } catch (error) {
                 console.log('Conta não sincronizada', error);
             }

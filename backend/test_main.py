@@ -12,6 +12,12 @@ def build_client(tmp_path):
     os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
     os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
     os.environ["STRIPE_PRICE_VIP"] = "price_vip"
+    os.environ.pop("VERCEL", None)
+    os.environ.pop("DATABASE_URL", None)
+    os.environ.pop("POSTGRES_URL", None)
+    os.environ.pop("POSTGRES_URL_NON_POOLING", None)
+    os.environ.pop("POSTGRES_PRISMA_URL", None)
+    os.environ.pop("SUPABASE_DB_URL", None)
     os.environ.pop("PAYPAL_CLIENT_ID", None)
     os.environ.pop("PAYPAL_SECRET", None)
     os.environ.pop("MP_ACCESS_TOKEN", None)
@@ -64,6 +70,38 @@ def test_auth_validation_errors_are_human_readable(tmp_path):
     )
     assert register_response.status_code == 422
     assert register_response.json()["detail"] == "Email inválido."
+
+
+def test_vercel_account_routes_require_persistent_database(monkeypatch):
+    monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.delenv("HOROSCOPO_DB_PATH", raising=False)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("POSTGRES_URL", raising=False)
+    monkeypatch.delenv("POSTGRES_URL_NON_POOLING", raising=False)
+    monkeypatch.delenv("POSTGRES_PRISMA_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_DB_URL", raising=False)
+
+    backend_dir = Path(__file__).resolve().parent
+    if str(backend_dir) not in sys.path:
+        sys.path.insert(0, str(backend_dir))
+    if "main" in sys.modules:
+        del sys.modules["main"]
+
+    main = importlib.import_module("main")
+    client = TestClient(main.app)
+
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "nome": "Conta Vercel",
+            "email": "conta-vercel@example.com",
+            "password": "senha-segura-123",
+            "signo": "Aries",
+        },
+    )
+
+    assert response.status_code == 503
+    assert "Banco persistente" in response.json()["detail"]
 
 
 def test_payment_config_reports_available_public_providers(tmp_path):

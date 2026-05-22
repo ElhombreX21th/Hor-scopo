@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seufuturo-v7';
+const CACHE_NAME = 'seufuturo-v8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

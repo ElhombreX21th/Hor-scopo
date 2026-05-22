@@ -95,6 +95,7 @@ APP_NAME=SeuFuturo
 APP_BASE_URL=https://hypersecit.com.br
 ALLOWED_ORIGINS=https://hypersecit.com.br
 ADMIN_TOKEN=<token forte>
+DATABASE_URL=<postgres_url_neon_supabase_ou_vercel_storage>
 STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
 STRIPE_PRICE_VIP=<price_...>
@@ -104,6 +105,7 @@ PAYPAL_CLIENT_ID=<client_id>
 PAYPAL_SECRET=<secret>
 PAYPAL_WEBHOOK_ID=<webhook_id>
 MP_ACCESS_TOKEN=<mercado_pago_access_token>
+MP_WEBHOOK_URL=https://hypersecit.com.br/api/mercadopago/webhook
 ```
 
 Domínio:
@@ -114,7 +116,7 @@ Domínio:
 - DNS recomendado para `www`: `A www.hypersecit.com.br 76.76.21.21`.
 - Não reutilize domínio de outro produto.
 
-Aviso de producao: o SQLite em Vercel fica em armazenamento efemero. Para contas e assinaturas persistentes, troque `HOROSCOPO_DB_PATH` por Postgres/Neon/Supabase antes de trafego real.
+Obrigatorio em producao na Vercel: configure `DATABASE_URL`, `POSTGRES_URL` ou `POSTGRES_URL_NON_POOLING` apontando para Postgres/Neon/Supabase/Vercel Storage. O backend bloqueia criacao/login de conta com `503` se estiver na Vercel usando SQLite temporario, para evitar perda de usuarios e falhas em PIX/cartao.
 
 Eventos Stripe usados:
 

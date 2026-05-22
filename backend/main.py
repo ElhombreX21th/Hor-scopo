@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from contextlib import contextmanager
 import hashlib
 import hmac
 import json
@@ -27,6 +28,13 @@ try:
     import stripe
 except ImportError:  # pragma: no cover - exercised only when dependency is missing in runtime
     stripe = None
+
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+except ImportError:  # pragma: no cover - only needed when DATABASE_URL/POSTGRES_URL is configured
+    psycopg = None
+    dict_row = None
 
 if load_dotenv:
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -55,7 +63,7 @@ ALLOWED_ORIGINS = [
     for origin in os.environ.get("ALLOWED_ORIGINS", "https://hypersecit.com.br,http://127.0.0.1:8001,http://localhost:8001").split(",")
     if origin.strip()
 ]
-STRIPE_API_VERSION = "2026-02-25.clover"
+STRIPE_API_VERSION = os.environ.get("STRIPE_API_VERSION", "2024-06-20")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_IDS = {
@@ -160,8 +168,37 @@ SIGNO_ALIASES = {
     "aquario": "aquario",
     "peixes": "peixes",
 }
+
+
+def first_configured_env(*names: str):
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if value:
+            return value
+    return ""
+
+
+DATABASE_URL = first_configured_env(
+    "DATABASE_URL",
+    "POSTGRES_URL",
+    "POSTGRES_URL_NON_POOLING",
+    "POSTGRES_PRISMA_URL",
+    "SUPABASE_DB_URL",
+)
+DB_BACKEND = "postgres" if DATABASE_URL else "sqlite"
 db_path_env = os.environ.get("HOROSCOPO_DB_PATH")
 DB_PATH = resolve_project_path(db_path_env) if db_path_env else os.path.join(RUNTIME_DIR, "horoscopo.db")
+
+
+def ensure_persistent_account_storage():
+    if IS_VERCEL and DB_BACKEND == "sqlite":
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Banco persistente nao configurado. Configure DATABASE_URL ou POSTGRES_URL "
+                "na Vercel para criar e acessar contas."
+            ),
+        )
 
 
 def agora_iso():
@@ -277,13 +314,63 @@ async def admin_list_requests(authorization: Optional[str] = Header(default=None
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class DatabaseSession:
+    def __init__(self, conn, backend: str):
+        self.conn = conn
+        self.backend = backend
+
+    def _prepare_sql(self, sql: str):
+        if self.backend == "postgres":
+            return sql.replace("?", "%s")
+        return sql
+
+    def execute(self, sql: str, params=()):
+        return self.conn.execute(self._prepare_sql(sql), params or ())
+
+    def executescript(self, script: str):
+        if self.backend == "sqlite":
+            return self.conn.executescript(script)
+
+        for statement in script.split(";"):
+            cleaned = statement.strip()
+            if cleaned:
+                self.execute(cleaned)
+        return None
+
+
+@contextmanager
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    if DB_BACKEND == "postgres":
+        if psycopg is None:
+            raise RuntimeError("DATABASE_URL/POSTGRES_URL configurado, mas psycopg nao esta instalado.")
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+    try:
+        yield DatabaseSession(conn, DB_BACKEND)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def _column_exists(conn, table: str, column: str):
+    if DB_BACKEND == "postgres":
+        return bool(conn.execute(
+            """
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = ?
+              AND column_name = ?
+            """,
+            (table, column),
+        ).fetchone())
+
     return any(row["name"] == column for row in conn.execute(f"PRAGMA table_info({table})").fetchall())
 
 
@@ -348,6 +435,7 @@ def paid_plan_price_brl(plano: str):
 
 
 def record_checkout_session(user_id: str, plano: str, provider: str, provider_session_id: str, checkout_url: Optional[str] = None):
+    ensure_persistent_account_storage()
     session_id = str(uuid.uuid4())
     with get_db() as conn:
         conn.execute(
@@ -448,7 +536,7 @@ def issue_token(user_id: str):
 
 def get_user_by_email(email: str):
     with get_db() as conn:
-        return conn.execute("SELECT * FROM users WHERE email = ?", (email.lower(),)).fetchone()
+        return conn.execute("SELECT * FROM users WHERE email = ?", (email.strip().lower(),)).fetchone()
 
 
 def get_user_by_id(user_id: str):
@@ -470,6 +558,7 @@ def update_user_stripe_customer(user_id: str, customer_id: str):
 
 
 def set_user_subscription(user_id: str, plano: str, status: str, customer_id: Optional[str] = None, subscription_id: Optional[str] = None):
+    ensure_persistent_account_storage()
     with get_db() as conn:
         conn.execute(
             """
@@ -486,6 +575,7 @@ def set_user_subscription(user_id: str, plano: str, status: str, customer_id: Op
 
 
 def downgrade_user_subscription_by_stripe(subscription_id: Optional[str], customer_id: Optional[str]):
+    ensure_persistent_account_storage()
     with get_db() as conn:
         if subscription_id:
             conn.execute(
@@ -511,6 +601,7 @@ def downgrade_user_subscription_by_stripe(subscription_id: Optional[str], custom
 def downgrade_user_subscription(user_id: Optional[str]):
     if not user_id:
         return
+    ensure_persistent_account_storage()
     with get_db() as conn:
         conn.execute(
             """
@@ -535,6 +626,7 @@ def parse_authorization_token(authorization: Optional[str]):
 
 
 def get_current_user(authorization: Optional[str] = Header(default=None)):
+    ensure_persistent_account_storage()
     token = parse_authorization_token(authorization)
     if not token:
         raise HTTPException(status_code=401, detail="Autenticação obrigatória.")
@@ -551,6 +643,7 @@ def get_optional_user(authorization: Optional[str]):
     if not token:
         return None
 
+    ensure_persistent_account_storage()
     user = get_user_by_token(token)
     if not user:
         raise HTTPException(status_code=401, detail="Token de autenticação inválido.")
@@ -578,17 +671,21 @@ def get_or_create_stripe_customer(user):
 
 def create_stripe_checkout_session(user, plano: str, price_id: str, customer_id: str):
     ensure_stripe_configured()
-    return stripe.checkout.Session.create(
-        mode="subscription",
-        customer=customer_id,
-        line_items=[{"price": price_id, "quantity": 1}],
-        success_url=build_frontend_url("/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"),
-        cancel_url=build_frontend_url("/?checkout=cancel"),
-        client_reference_id=user["id"],
-        metadata={"user_id": user["id"], "plano": plano},
-        subscription_data={"metadata": {"user_id": user["id"], "plano": plano}},
-        allow_promotion_codes=True,
-    )
+    try:
+        return stripe.checkout.Session.create(
+            mode="subscription",
+            customer=customer_id,
+            line_items=[{"price": price_id, "quantity": 1}],
+            success_url=build_frontend_url("/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"),
+            cancel_url=build_frontend_url("/?checkout=cancel"),
+            client_reference_id=user["id"],
+            metadata={"user_id": user["id"], "plano": plano},
+            subscription_data={"metadata": {"user_id": user["id"], "plano": plano}},
+            allow_promotion_codes=True,
+        )
+    except Exception as exc:
+        logger.warning("stripe_checkout_create_failed: user=%s plano=%s error=%s", user["id"], plano, str(exc))
+        raise HTTPException(status_code=502, detail="Falha ao criar checkout Stripe. Verifique chaves e preços do plano.")
 
 
 def create_stripe_portal_session(customer_id: str):
@@ -624,6 +721,14 @@ def _parse_stripe_event(payload: bytes, signature: Optional[str]):
         return json.loads(payload.decode("utf-8"))
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Payload Stripe inválido.")
+
+def payer_name_parts(nome: Optional[str]):
+    parts = [part for part in (nome or "").strip().split() if part]
+    if not parts:
+        return "Assinante", None
+    first_name = parts[0]
+    last_name = " ".join(parts[1:]) if len(parts) > 1 else None
+    return first_name, last_name
 
 
 # --------------------- PayPal helpers ---------------------
@@ -837,8 +942,18 @@ async def mercadopago_create_pix(req: MPCreatePixModel, user=Depends(get_current
         "description": f"Assinatura SeuFuturo - {plano.upper()}",
         "external_reference": f"{user['id']}:{plano}",
     }
-
-    body["payer"] = {"email": req.email or user["email"]}
+    email = str(req.email or user["email"] or "").strip().lower()
+    first_name, last_name = payer_name_parts(user["nome"])
+    payer = {"email": email}
+    if first_name:
+        payer["first_name"] = first_name
+    if last_name:
+        payer["last_name"] = last_name
+    body["payer"] = payer
+    webhook_url = os.environ.get("MP_WEBHOOK_URL", "").strip()
+    if webhook_url:
+        body["notification_url"] = webhook_url
+    headers["X-Idempotency-Key"] = str(uuid.uuid4())
 
     try:
         resp = requests.post(url, json=body, headers=headers, timeout=10)
@@ -857,10 +972,18 @@ async def mercadopago_create_pix(req: MPCreatePixModel, user=Depends(get_current
             "id": data.get("id"),
             "qr_code": transaction_data.get("qr_code"),
             "qr_code_base64": transaction_data.get("qr_code_base64"),
+            "ticket_url": transaction_data.get("ticket_url"),
             "raw": data,
         }
-    except requests.RequestException:
-        raise HTTPException(status_code=502, detail="Falha ao criar pagamento PIX no Mercado Pago.")
+    except requests.RequestException as exc:
+        detalhe = ""
+        if getattr(exc, "response", None) is not None:
+            try:
+                detalhe = exc.response.json().get("message") or exc.response.text
+            except Exception:
+                detalhe = exc.response.text
+        logger.warning("mercadopago_create_pix_failed: user=%s plano=%s error=%s", user["id"], plano, detalhe or str(exc))
+        raise HTTPException(status_code=502, detail=f"Falha ao criar pagamento PIX no Mercado Pago. {detalhe}".strip())
 
 
 @app.post("/api/mercadopago/webhook")
@@ -1106,10 +1229,11 @@ class CheckoutSessionModel(BaseModel):
 
 @app.post("/api/auth/register")
 async def register(req: RegisterModel):
+    ensure_persistent_account_storage()
     if len(req.password) < 8:
         raise HTTPException(status_code=400, detail="A senha deve ter pelo menos 8 caracteres.")
 
-    email = req.email.lower()
+    email = str(req.email).strip().lower()
     if get_user_by_email(email):
         raise HTTPException(status_code=409, detail="Email já registado.")
 
@@ -1136,7 +1260,8 @@ async def register(req: RegisterModel):
 
 @app.post("/api/auth/login")
 async def login(req: LoginModel):
-    user = get_user_by_email(req.email.lower())
+    ensure_persistent_account_storage()
+    user = get_user_by_email(str(req.email).strip().lower())
     if not user or not verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Email ou senha inválidos.")
 

@@ -26,6 +26,7 @@ APP_NAME=SeuFuturo
 APP_BASE_URL=https://hypersecit.com.br
 ALLOWED_ORIGINS=https://hypersecit.com.br
 ADMIN_TOKEN=<token forte>
+DATABASE_URL=<postgres_url_neon_supabase_ou_vercel_storage>
 STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
 STRIPE_PRICE_VIP=<price_...>
@@ -38,7 +39,7 @@ STRIPE_WEBHOOK_SECRET=<whsec_...>
    - `A www.hypersecit.com.br 76.76.21.21`
 6. Configure o webhook Stripe em `https://hypersecit.com.br/api/stripe/webhook`.
 
-Importante: SQLite em Vercel usa armazenamento efemero. Para assinaturas reais persistentes, migre para Postgres/Neon/Supabase antes de trafego real.
+Importante: SQLite em Vercel usa armazenamento efemero. Para contas, PIX e assinaturas reais, configure `DATABASE_URL`, `POSTGRES_URL` ou `POSTGRES_URL_NON_POOLING` com Postgres/Neon/Supabase/Vercel Storage. Sem banco persistente, o backend retorna `503` nos fluxos de conta para nao criar usuarios que desaparecem entre invocacoes serverless.
 
 Passos com Docker (testes locais):
 
@@ -96,6 +97,7 @@ Variáveis de ambiente importantes (backend):
 - `PORT` - porta onde o backend escuta (padrão 8000)
 - `HOST` - host (padrão 0.0.0.0)
 - `HOROSCOPO_DB_PATH` - caminho para o DB SQLite
+- `DATABASE_URL` / `POSTGRES_URL` - banco Postgres persistente para producao serverless
 - `APP_BASE_URL` - URL base usada em callbacks e links
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM`, `STRIPE_PRICE_VIP` - se usar Stripe
 
@@ -123,6 +125,7 @@ Variáveis adicionais para pagamentos:
 
 - `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`, `PAYPAL_MODE` (sandbox|live)
 - `MP_ACCESS_TOKEN` (MercadoPago) — se optar por Mercado Pago
+- `MP_WEBHOOK_URL` (MercadoPago) — recomendado: `https://hypersecit.com.br/api/mercadopago/webhook`
 - `GERENCIANET_CLIENT_ID` / `GERENCIANET_CLIENT_SECRET` — se optar por Gerencianet
 
 Admin (reembolsos e auditoria):
