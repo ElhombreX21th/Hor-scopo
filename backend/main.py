@@ -524,6 +524,16 @@ def user_to_payload(user):
     }
 
 
+def auth_response_for_user_id(user_id: str):
+    token = issue_token(user_id)
+    user = get_user_by_token(token)
+    return {
+        "access_token": token,
+        "token_type": BEARER_AUTH_TYPE,
+        "user": user_to_payload(user),
+    }
+
+
 def issue_token(user_id: str):
     token = secrets.token_urlsafe(32)
     with get_db() as conn:
@@ -1234,8 +1244,11 @@ async def register(req: RegisterModel):
         raise HTTPException(status_code=400, detail="A senha deve ter pelo menos 8 caracteres.")
 
     email = str(req.email).strip().lower()
-    if get_user_by_email(email):
-        raise HTTPException(status_code=409, detail="Email já registado.")
+    existing_user = get_user_by_email(email)
+    if existing_user:
+        if verify_password(req.password, existing_user["password_hash"]):
+            return auth_response_for_user_id(existing_user["id"])
+        raise HTTPException(status_code=409, detail="Email já registado. Entre com a senha correta para acessar a conta.")
 
     user_id = str(uuid.uuid4())
     now = agora_iso()
@@ -1248,31 +1261,19 @@ async def register(req: RegisterModel):
             (user_id, req.nome.strip(), email, hash_password(req.password), req.signo.strip(), "basic", now, now),
         )
 
-    token = issue_token(user_id)
-    user = get_user_by_token(token)
-
-    return {
-        "access_token": token,
-        "token_type": BEARER_AUTH_TYPE,
-        "user": user_to_payload(user),
-    }
+    return auth_response_for_user_id(user_id)
 
 
 @app.post("/api/auth/login")
 async def login(req: LoginModel):
     ensure_persistent_account_storage()
     user = get_user_by_email(str(req.email).strip().lower())
-    if not user or not verify_password(req.password, user["password_hash"]):
+    if not user:
+        raise HTTPException(status_code=404, detail="Conta não encontrada. Crie uma conta novamente para continuar.")
+    if not verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Email ou senha inválidos.")
 
-    token = issue_token(user["id"])
-    updated_user = get_user_by_token(token)
-
-    return {
-        "access_token": token,
-        "token_type": BEARER_AUTH_TYPE,
-        "user": user_to_payload(updated_user),
-    }
+    return auth_response_for_user_id(user["id"])
 
 
 @app.get("/api/me")

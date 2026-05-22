@@ -415,6 +415,11 @@
             box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.16);
         }
 
+        .form-field option {
+            background: #ffffff;
+            color: #1a0e2e;
+        }
+
         .status-message {
             min-height: 1.25rem;
             font-size: 0.875rem;
@@ -1228,6 +1233,9 @@
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
+                    if (modo === 'login' && response.status === 404) {
+                        throw new Error('Conta não encontrada. Clique em Criar conta para continuar.');
+                    }
                     throw new Error(apiErrorMessage(data, 'Falha na autenticação.'));
                 }
 

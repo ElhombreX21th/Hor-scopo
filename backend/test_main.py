@@ -72,6 +72,36 @@ def test_auth_validation_errors_are_human_readable(tmp_path):
     assert register_response.json()["detail"] == "Email inválido."
 
 
+def test_login_unknown_account_is_actionable(tmp_path):
+    client = build_client(tmp_path)
+
+    response = client.post(
+        "/api/auth/login",
+        json={"email": "conta-antiga@example.com", "password": "senha-segura-123"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Conta não encontrada. Crie uma conta novamente para continuar."
+
+
+def test_register_existing_account_with_same_password_returns_session(tmp_path):
+    client = build_client(tmp_path)
+    payload = {
+        "nome": "Conta Existente",
+        "email": "existente@example.com",
+        "password": "senha-segura-123",
+        "signo": "Aries",
+    }
+
+    created = client.post("/api/auth/register", json=payload)
+    repeated = client.post("/api/auth/register", json=payload)
+
+    assert created.status_code == 200
+    assert repeated.status_code == 200
+    assert repeated.json()["user"]["email"] == "existente@example.com"
+    assert repeated.json()["access_token"]
+
+
 def test_vercel_account_routes_require_persistent_database(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
     monkeypatch.delenv("HOROSCOPO_DB_PATH", raising=False)
