@@ -23,8 +23,8 @@ Fluxo recomendado:
 
 ```text
 APP_NAME=SeuFuturo
-APP_BASE_URL=https://hypersecit.com.br
-ALLOWED_ORIGINS=https://hypersecit.com.br
+APP_BASE_URL=https://seufuturo.blog.br
+ALLOWED_ORIGINS=https://seufuturo.blog.br
 ADMIN_TOKEN=<token forte>
 STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
@@ -32,11 +32,11 @@ STRIPE_PRICE_VIP=<price_...>
 STRIPE_WEBHOOK_SECRET=<whsec_...>
 ```
 
-4. O domínio `hypersecit.com.br` deve estar anexado ao projeto Vercel `seufuturo-horoscopo`.
+4. O domínio `seufuturo.blog.br` deve estar anexado ao projeto Vercel `seufuturo-horoscopo`.
 5. Configure no provedor DNS:
-   - `A hypersecit.com.br 76.76.21.21`
-   - `A www.hypersecit.com.br 76.76.21.21`
-6. Configure o webhook Stripe em `https://hypersecit.com.br/api/stripe/webhook`.
+   - `A seufuturo.blog.br 76.76.21.21`
+   - `A www.seufuturo.blog.br 76.76.21.21`
+6. Configure o webhook Stripe em `https://seufuturo.blog.br/api/stripe/webhook`.
 
 Importante: SQLite em Vercel usa armazenamento efemero. Para assinaturas reais persistentes, migre para Postgres/Neon/Supabase antes de trafego real.
 
@@ -65,14 +65,14 @@ Produção com domínio e HTTPS:
 
 4. Configure um proxy reverso (nginx/Caddy) para mapear o domínio próprio final:
 
-- `https://hypersecit.com.br` -> frontend na raiz
-- `https://hypersecit.com.br/api/*` -> backend
-- `https://hypersecit.com.br/docs` e `https://hypersecit.com.br/openapi.json` -> backend
+- `https://seufuturo.blog.br` -> frontend na raiz
+- `https://seufuturo.blog.br/api/*` -> backend
+- `https://seufuturo.blog.br/docs` e `https://seufuturo.blog.br/openapi.json` -> backend
 
 5. Recomendado: usar Caddy ou Certbot + nginx para TLS automático. Exemplo com Caddy (Caddyfile):
 
 ```
-hypersecit.com.br {
+seufuturo.blog.br {
   handle /api/* {
     reverse_proxy localhost:8000
   }
@@ -150,12 +150,12 @@ Se quiser, implemento também um endpoint de webhook PayPal e um exemplo complet
 Webhooks e configuração (PayPal / Mercado Pago)
 
 1. PayPal
-  - No painel do PayPal (developer), registe o URL do webhook: `https://hypersecit.com.br/api/paypal/webhook`.
+  - No painel do PayPal (developer), registe o URL do webhook: `https://seufuturo.blog.br/api/paypal/webhook`.
   - Configure os eventos que deseja receber (ex.: `PAYMENT.CAPTURE.COMPLETED`, `CHECKOUT.ORDER.APPROVED`).
   - Em produção, valida a assinatura do webhook usando o SDK do PayPal ou com as headers fornecidas. O backend já guarda os eventos em `backend/data_requests.json` para auditoria.
 
 2. Mercado Pago (PIX)
-  - No painel Mercado Pago, configure o webhook apontando para `https://hypersecit.com.br/api/mercadopago/webhook`.
+  - No painel Mercado Pago, configure o webhook apontando para `https://seufuturo.blog.br/api/mercadopago/webhook`.
   - Use a variável `MP_ACCESS_TOKEN` no ambiente para que o backend possa criar pagamentos PIX via `POST /api/mercadopago/create-pix`.
   - O endpoint retorna `qr_code` e `qr_code_base64` para exibir ao utilizador.
 

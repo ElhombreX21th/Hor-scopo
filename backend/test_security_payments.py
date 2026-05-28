@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 def build_client(tmp_path):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
     os.environ["DATA_REQUESTS_PATH"] = str(tmp_path / "data-requests.json")
-    os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
+    os.environ["APP_BASE_URL"] = "https://seufuturo.blog.br"
     os.environ["PAYPAL_CLIENT_ID"] = "paypal-client"
     os.environ["PAYPAL_SECRET"] = "paypal-secret"
     os.environ["MP_ACCESS_TOKEN"] = "mp-token"

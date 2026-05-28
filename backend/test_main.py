@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 def build_client(tmp_path):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
-    os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
+    os.environ["APP_BASE_URL"] = "https://seufuturo.blog.br"
     os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
     os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
     os.environ["STRIPE_PRICE_VIP"] = "price_vip"
@@ -196,9 +196,9 @@ def test_stripe_checkout_redirects_to_subscription_confirmation(tmp_path, monkey
 
     assert session["id"] == "cs_redirect_123"
     assert created_session["success_url"] == (
-        "https://hypersecit.com.br/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+        "https://seufuturo.blog.br/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"
     )
-    assert created_session["cancel_url"] == "https://hypersecit.com.br/?checkout=cancel"
+    assert created_session["cancel_url"] == "https://seufuturo.blog.br/?checkout=cancel"
 
 
 def test_vip_webhook_unlocks_luck_and_mystic_advice(tmp_path, monkeypatch):

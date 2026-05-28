@@ -1,10 +1,10 @@
 # SeuFuturo Store Submission Pack
 
-Estado atual: a PWA esta online em `https://hypersecit.com.br/` e pronta para gerar pacotes nativos/TWA quando as contas Apple e Google estiverem autorizadas.
+Estado atual: a PWA esta online em `https://seufuturo.blog.br/` e pronta para gerar pacotes nativos/TWA quando as contas Apple e Google estiverem autorizadas.
 
 Sem pagar contas de loja agora, use a distribuicao gratuita por PWA:
 
-- Link direto: `https://hypersecit.com.br/`
+- Link direto: `https://seufuturo.blog.br/`
 - A instalacao acontece pelo navegador.
 - O kit de divulgacao gratuita esta em `marketing/`.
 
@@ -16,14 +16,14 @@ O preparo de App Store/Google Play continua neste diretorio para quando voce dec
 - Criar conta Google Play Developer: https://play.google.com/console/signup
 - Apple Developer Program: https://developer.apple.com/programs/enroll/
 - App Store Connect: https://appstoreconnect.apple.com/apps
-- PWABuilder para gerar pacote PWA/TWA: https://www.pwabuilder.com/reportcard?site=https%3A%2F%2Fhypersecit.com.br%2F
+- PWABuilder para gerar pacote PWA/TWA: https://www.pwabuilder.com/reportcard?site=https%3A%2F%2Fseufuturo.blog.br%2F
 
 ## URLs publicas
 
-- App: https://hypersecit.com.br/
-- Manifest: https://hypersecit.com.br/manifest.json
-- Politica de privacidade: https://hypersecit.com.br/privacy
-- Termos: https://hypersecit.com.br/terms
+- App: https://seufuturo.blog.br/
+- Manifest: https://seufuturo.blog.br/manifest.json
+- Politica de privacidade: https://seufuturo.blog.br/privacy
+- Termos: https://seufuturo.blog.br/terms
 
 ## Identificadores sugeridos
 

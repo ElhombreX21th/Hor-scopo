@@ -49,10 +49,10 @@ RUNTIME_DIR = resolve_project_path(runtime_dir_env) if runtime_dir_env else DEFA
 os.makedirs(RUNTIME_DIR, exist_ok=True)
 
 APP_NAME = os.environ.get("APP_NAME", "SeuFuturo")
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://hypersecit.com.br").rstrip("/")
+APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://seufuturo.blog.br").rstrip("/")
 ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("ALLOWED_ORIGINS", "https://hypersecit.com.br,http://127.0.0.1:8001,http://localhost:8001").split(",")
+    for origin in os.environ.get("ALLOWED_ORIGINS", "https://seufuturo.blog.br,http://127.0.0.1:8001,http://localhost:8001").split(",")
     if origin.strip()
 ]
 STRIPE_API_VERSION = "2026-02-25.clover"
@@ -104,7 +104,7 @@ logger = logging.getLogger('seufuturo')
 # Permite que o frontend aceda ao backend sem erros de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS or ["https://hypersecit.com.br"],
+    allow_origins=ALLOWED_ORIGINS or ["https://seufuturo.blog.br"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
