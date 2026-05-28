@@ -69,6 +69,22 @@
       "dest": "frontend/confirmacao-assinatura.html"
     },
     {
+      "src": "/app-details",
+      "dest": "frontend/app-details.html"
+    },
+    {
+      "src": "/app-details.html",
+      "dest": "frontend/app-details.html"
+    },
+    {
+      "src": "/account-deletion",
+      "dest": "frontend/account-deletion.html"
+    },
+    {
+      "src": "/account-deletion.html",
+      "dest": "frontend/account-deletion.html"
+    },
+    {
       "src": "/",
       "dest": "frontend/index.html"
     },
