@@ -6,9 +6,9 @@
 - Subtitulo: Horoscopo diario por signo
 - Categoria primaria: Lifestyle
 - Preco do app: Gratis
-- Politica de privacidade: https://hypersecit.com.br/privacy
-- URL de suporte: https://hypersecit.com.br/terms
-- URL de marketing: https://hypersecit.com.br/
+- Politica de privacidade: https://seufuturo.blog.br/privacy
+- URL de suporte: https://seufuturo.blog.br/terms
+- URL de marketing: https://seufuturo.blog.br/
 
 ## Texto promocional
 

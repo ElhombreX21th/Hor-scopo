@@ -137,7 +137,7 @@ python -m http.server 8000
 
 Ir a: https://www.pwabuilder.com/
 
-- Colar URL: `https://hypersecit.com.br`
+- Colar URL: `https://seufuturo.blog.br`
 - Seguir recomendações
 - Gerar apps para todas as plataformas
 
@@ -151,9 +151,9 @@ Ir a: https://www.pwabuilder.com/
 # ou Cloudflare Pages
 
 # Frontend deve estar em:
-https://hypersecit.com.br/
-https://hypersecit.com.br/manifest.json
-https://hypersecit.com.br/service-worker.js
+https://seufuturo.blog.br/
+https://seufuturo.blog.br/manifest.json
+https://seufuturo.blog.br/service-worker.js
 ```
 
 ### 2. Instalar Bubblewrap
@@ -285,7 +285,7 @@ npx cap open ios
 - Acesso aos dados pessoais
 
 ## Contacto
-suporte@hypersecit.com.br
+suporte@seufuturo.blog.br
 ```
 
 ### Terms of Service

@@ -9,10 +9,10 @@ O SeuFuturo fica isolado no projeto Vercel `seufuturo-horoscopo`.
 URL pública final:
 
 ```text
-https://hypersecit.com.br
+https://seufuturo.blog.br
 ```
 
-Não use domínios ou projetos de outros produtos para este app. O domínio `hypersecit.com.br` deve ficar anexado apenas ao projeto Vercel `seufuturo-horoscopo`.
+Não use domínios ou projetos de outros produtos para este app. O domínio `seufuturo.blog.br` deve ficar anexado apenas ao projeto Vercel `seufuturo-horoscopo`.
 
 ## Estrutura
 
@@ -60,8 +60,8 @@ URLs locais:
 
 Obrigatórias para pagamento real:
 
-- `APP_BASE_URL`: URL pública do frontend, ex. `https://hypersecit.com.br`
-- `ALLOWED_ORIGINS`: origens CORS, ex. `https://hypersecit.com.br`
+- `APP_BASE_URL`: URL pública do frontend, ex. `https://seufuturo.blog.br`
+- `ALLOWED_ORIGINS`: origens CORS, ex. `https://seufuturo.blog.br`
 - `STRIPE_SECRET_KEY`: chave secreta Stripe
 - `STRIPE_PRICE_PREMIUM`: ID do Price recorrente Premium
 - `STRIPE_PRICE_VIP`: ID do Price recorrente VIP
@@ -70,13 +70,13 @@ Obrigatórias para pagamento real:
 O domínio de produção configurado no projeto é:
 
 ```text
-https://hypersecit.com.br
+https://seufuturo.blog.br
 ```
 
 O webhook público deve apontar para:
 
 ```text
-POST https://hypersecit.com.br/api/stripe/webhook
+POST https://seufuturo.blog.br/api/stripe/webhook
 ```
 
 ## Deploy na Vercel
@@ -92,8 +92,8 @@ Variaveis recomendadas na Vercel:
 
 ```text
 APP_NAME=SeuFuturo
-APP_BASE_URL=https://hypersecit.com.br
-ALLOWED_ORIGINS=https://hypersecit.com.br
+APP_BASE_URL=https://seufuturo.blog.br
+ALLOWED_ORIGINS=https://seufuturo.blog.br
 ADMIN_TOKEN=<token forte>
 STRIPE_SECRET_KEY=<sk_live_...>
 STRIPE_PRICE_PREMIUM=<price_...>
@@ -109,9 +109,9 @@ MP_ACCESS_TOKEN=<mercado_pago_access_token>
 Domínio:
 
 - Projeto Vercel: `seufuturo-horoscopo`.
-- Domínio de produção: `hypersecit.com.br`.
-- DNS necessário no provedor: `A hypersecit.com.br 76.76.21.21`.
-- DNS recomendado para `www`: `A www.hypersecit.com.br 76.76.21.21`.
+- Domínio de produção: `seufuturo.blog.br`.
+- DNS necessário no provedor: `A seufuturo.blog.br 76.76.21.21`.
+- DNS recomendado para `www`: `A www.seufuturo.blog.br 76.76.21.21`.
 - Não reutilize domínio de outro produto.
 
 Aviso de producao: o SQLite em Vercel fica em armazenamento efemero. Para contas e assinaturas persistentes, troque `HOROSCOPO_DB_PATH` por Postgres/Neon/Supabase antes de trafego real.

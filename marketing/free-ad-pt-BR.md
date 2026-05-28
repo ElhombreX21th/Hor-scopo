@@ -17,7 +17,7 @@ Escolha seu signo, leia a previsao do dia e, se quiser, desbloqueie leituras ext
 Funciona direto no navegador, sem precisar baixar pela App Store ou Google Play.
 
 Teste aqui:
-https://hypersecit.com.br/
+https://seufuturo.blog.br/
 
 ## CTA
 

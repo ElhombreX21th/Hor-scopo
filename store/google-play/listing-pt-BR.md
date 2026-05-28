@@ -7,8 +7,8 @@
 - Categoria: Estilo de vida
 - Tipo: App
 - Preco do app: Gratis
-- Email de contato: suporte@hypersecit.com.br
-- Politica de privacidade: https://hypersecit.com.br/privacy
+- Email de contato: suporte@seufuturo.blog.br
+- Politica de privacidade: https://seufuturo.blog.br/privacy
 
 ## Descricao completa
 

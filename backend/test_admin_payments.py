@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 def build_client(tmp_path):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
-    os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
+    os.environ["APP_BASE_URL"] = "https://seufuturo.blog.br"
     os.environ["ADMIN_TOKEN"] = "admintoken123"
     backend_dir = Path(__file__).resolve().parent
     if str(backend_dir) not in sys.path:
