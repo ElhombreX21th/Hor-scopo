@@ -1,6 +1,6 @@
 # SeuFuturo
 
-SaaS de previsões astrológicas com backend FastAPI, frontend PWA responsivo, autenticação, paywall por plano e assinatura recorrente.
+Astrology prediction SaaS with a FastAPI backend, responsive PWA frontend, authentication, plan-based paywall, and recurring subscription flow.
 
 ## Screenshots
 
@@ -8,7 +8,7 @@ SaaS de previsões astrológicas com backend FastAPI, frontend PWA responsivo, a
 
 ![SeuFuturo second preview](preview-2.svg)
 
-## Estrutura
+## Structure
 
 ```text
 SeuFuturo/
@@ -27,7 +27,7 @@ SeuFuturo/
 └── README.md
 ```
 
-## Configuração Local
+## Local Setup
 
 Backend:
 
@@ -43,31 +43,31 @@ Frontend:
 python -m http.server 8001 --directory frontend
 ```
 
-URLs locais:
+Local URLs:
 
 - Frontend: `http://127.0.0.1:8001`
 - Backend: `http://127.0.0.1:8000`
 - Swagger: `http://127.0.0.1:8000/docs`
 
-## Funcionalidades
+## Features
 
-- Frontend PWA responsivo
-- Backend FastAPI
-- Autenticação
-- Controle de planos
-- Fluxo de checkout
-- Termos e política de privacidade
-- Testes automatizados
+- Responsive PWA frontend
+- FastAPI backend
+- Authentication
+- Plan control
+- Checkout flow
+- Terms and privacy pages
+- Automated tests
 
-## Planos
+## Plans
 
-| Plano | Funcionalidades |
+| Plan | Features |
 |---|---|
-| Basic | Previsão diária |
-| Premium | Amor + carreira |
-| VIP | Tudo + sorte e conselho místico |
+| Basic | Daily prediction |
+| Premium | Love + career |
+| VIP | Everything + luck and mystic advice |
 
-## Endpoints Principais
+## Main Endpoints
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
@@ -76,7 +76,7 @@ URLs locais:
 - `POST /api/checkout/session`
 - `POST /api/billing/portal`
 
-## Testes
+## Tests
 
 ```bash
 pytest backend/test_main.py -q
@@ -84,4 +84,4 @@ pytest backend/test_main.py -q
 
 ## Status
 
-Projeto preparado como MVP SaaS/PWA. Antes de tráfego real, recomenda-se trocar armazenamento local por banco externo, revisar segurança, configurar variáveis de produção e validar o fluxo completo de pagamento.
+MVP SaaS/PWA project. Before real traffic, replace local storage with an external database, review security, configure production environment variables, and validate the full payment flow.
