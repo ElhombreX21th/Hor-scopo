@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://hypersecit.com.br/sitemap.xml
+Sitemap: https://seufuturo.blog.br/sitemap.xml
 
-IndexNow: https://hypersecit.com.br/d20eb7b81b91056eb97ceb22171c8952.txt
+IndexNow: https://seufuturo.blog.br/d20eb7b81b91056eb97ceb22171c8952.txt

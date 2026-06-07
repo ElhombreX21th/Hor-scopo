@@ -12,7 +12,7 @@ Use este arquivo como base para preencher Google Play Data Safety e Apple App Pr
 
 ## Compartilhamento
 
-- Provedores de pagamento: Stripe, PayPal e Mercado Pago quando usados no site/PWA.
+- Provedores de pagamento: PayPal e Mercado Pago quando usados no site/PWA.
 - Hospedagem/infraestrutura: Vercel e banco configurado em producao.
 - Email/suporte: apenas se configurado para comunicacao operacional.
 
@@ -51,4 +51,3 @@ Nao vender dados pessoais. Nao usar dados para publicidade comportamental. Nao c
 - App activity: app interactions/sign selection/plan selection. Collected for app functionality and analytics.
 - Device or other IDs: only if introduced by future analytics, billing SDKs, or push providers.
 - Data deletion: available by authenticated account deletion and privacy form.
-

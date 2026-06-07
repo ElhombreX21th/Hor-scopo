@@ -1,59 +1,82 @@
 # SeuFuturo Store Submission Pack
 
-Estado atual: a PWA esta online em `https://hypersecit.com.br/` e pronta para gerar pacotes nativos/TWA quando as contas Apple e Google estiverem autorizadas.
+Este diretorio concentra o material para publicar o SeuFuturo na App Store e na Google Play com o dominio oficial `https://seufuturo.blog.br/`.
 
-Sem pagar contas de loja agora, use a distribuicao gratuita por PWA:
+## Estrategia da primeira versao
 
-- Link direto: `https://hypersecit.com.br/`
-- A instalacao acontece pelo navegador.
-- O kit de divulgacao gratuita esta em `marketing/`.
+A primeira versao nativa esta preparada como app gratuito com o plano Basic. PayPal e PIX continuam disponiveis no site/PWA, mas ficam bloqueados no build de loja para evitar rejeicao por compra externa de conteudo digital.
 
-O preparo de App Store/Google Play continua neste diretorio para quando voce decidir pagar as contas e seguir para submissao oficial.
+Quando quiser vender Premium/VIP dentro dos apps nativos, implemente:
 
-## Links de autorizacao
+- iOS: StoreKit / In-App Purchase.
+- Android: Google Play Billing.
 
-- Google Play Console: https://play.google.com/console/
-- Criar conta Google Play Developer: https://play.google.com/console/signup
-- Apple Developer Program: https://developer.apple.com/programs/enroll/
-- App Store Connect: https://appstoreconnect.apple.com/apps
-- PWABuilder para gerar pacote PWA/TWA: https://www.pwabuilder.com/reportcard?site=https%3A%2F%2Fhypersecit.com.br%2F
+Produtos planejados para a etapa seguinte:
+
+- `seufuturo_premium_monthly`
+- `seufuturo_vip_monthly`
 
 ## URLs publicas
 
-- App: https://hypersecit.com.br/
-- Manifest: https://hypersecit.com.br/manifest.json
-- Politica de privacidade: https://hypersecit.com.br/privacy
-- Termos: https://hypersecit.com.br/terms
+- App: https://seufuturo.blog.br/
+- Manifest: https://seufuturo.blog.br/manifest.json
+- Politica de privacidade: https://seufuturo.blog.br/privacy
+- Termos: https://seufuturo.blog.br/terms
 
-## Identificadores sugeridos
+## Identificadores
 
-- Android package name: `br.com.hypersecit.seufuturo`
-- iOS bundle ID: `br.com.hypersecit.seufuturo`
+- Android package name: `br.blog.seufuturo`
+- iOS bundle ID: `br.blog.seufuturo`
 - App name: `SeuFuturo`
-- Categoria: `Lifestyle`
+- Categoria sugerida: `Lifestyle` / `Estilo de vida`
 
-O package name Android e o bundle ID iOS viram identificadores permanentes no ecossistema da loja. Confirmar antes de criar os registros oficiais.
+Esses identificadores ficam permanentes depois que os apps forem criados nas lojas.
 
-## Assets gerados
+## Build nativo
 
-- App Store icon: `store/assets/app-icon-1024.png`
-- Google Play icon: `store/assets/google-play-icon-512.png`
-- Google Play feature graphic: `store/assets/feature-graphic-1024x500.png`
-- Screenshot Android: `store/screenshots/android-pixel-7.png`
-- Screenshot iOS/web mobile: `store/screenshots/ios-phone-430x932.png`
-- Screenshot wide/web: `store/screenshots/web-wide-1280x720.png`
-- PWA icons publicados no frontend: `frontend/icons/*.png`
+O projeto usa Capacitor para empacotar a PWA:
 
-## Bloqueio de monetizacao nas lojas
+```bash
+npm install
+npm run build:store
+```
 
-Stripe, PayPal e PIX podem continuar no site/PWA. Para apps distribuidos pela App Store e Google Play, Premium/VIP sao conteudo digital dentro do app; por isso, o caminho seguro para aprovacao e usar:
+Comandos por plataforma:
 
-- Apple: StoreKit / In-App Purchase para iOS.
-- Google: Google Play Billing para Android.
+```bash
+npm run ios:open
+npm run android:open
+npm run android:bundle:win
+```
 
-Produtos sugeridos:
+Observacao: o upload iOS exige macOS com Xcode. No Windows da para preparar o projeto, gerar assets, validar o Android e abrir a pasta iOS para levar ao Mac.
 
-- `seufuturo_premium_monthly` -> plano Premium mensal.
-- `seufuturo_vip_monthly` -> plano VIP mensal.
+## Assets
 
-Depois que as contas estiverem liberadas, o proximo passo tecnico e criar os produtos nas lojas e adicionar verificacao server-side dos recibos/tokens antes de liberar `premium` ou `vip`.
+- App Store icon 1024x1024: `store/assets/app-icon-1024.png`
+- Google Play icon 512x512: `store/assets/google-play-icon-512.png`
+- Google Play feature graphic 1024x500: `store/assets/feature-graphic-1024x500.png`
+- App Store screenshots: `store/screenshots/app-store/*.png`
+- Google Play screenshots: `store/screenshots/google-play/*.png`
+- PWA icons publicados: `frontend/icons/*.png`
+
+Regenerar screenshots:
+
+```bash
+npm run store:screenshots
+```
+
+Validar o pacote antes de submeter:
+
+```bash
+npm run store:check
+```
+
+## Documentos
+
+- App Store: `store/app-store/listing-pt-BR.md`
+- Build e envio iOS: `store/app-store/build-and-submit.md`
+- Google Play: `store/google-play/listing-pt-BR.md`
+- Build e envio Android: `store/google-play/build-and-submit.md`
+- Privacidade/Data Safety: `store/privacy/data-safety-and-app-privacy.md`
+- Checklist geral: `store/submission-checklist.md`

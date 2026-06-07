@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 def build_client(tmp_path):
     os.environ["HOROSCOPO_DB_PATH"] = str(tmp_path / "horoscopo-test.db")
-    os.environ["APP_BASE_URL"] = "https://hypersecit.com.br"
+    os.environ["APP_BASE_URL"] = "https://seufuturo.blog.br"
     os.environ["STRIPE_SECRET_KEY"] = "sk_test_123"
     os.environ["STRIPE_PRICE_PREMIUM"] = "price_premium"
     os.environ["STRIPE_PRICE_VIP"] = "price_vip"
@@ -264,9 +264,9 @@ def test_stripe_checkout_redirects_to_subscription_confirmation(tmp_path, monkey
 
     assert session["id"] == "cs_redirect_123"
     assert created_session["success_url"] == (
-        "https://hypersecit.com.br/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+        "https://seufuturo.blog.br/confirmacao-assinatura?checkout=success&session_id={CHECKOUT_SESSION_ID}"
     )
-    assert created_session["cancel_url"] == "https://hypersecit.com.br/?checkout=cancel"
+    assert created_session["cancel_url"] == "https://seufuturo.blog.br/?checkout=cancel"
 
 
 def test_vip_webhook_unlocks_luck_and_mystic_advice(tmp_path, monkeypatch):
@@ -423,9 +423,13 @@ def test_accented_and_portuguese_sign_names_use_specific_predictions(tmp_path):
     client = build_client(tmp_path)
 
     gemeos_response = client.get("/api/horoscopo", params={"signo": "Gémeos"})
-    cancro_response = client.get("/api/horoscopo", params={"signo": "Cancro"})
+    cancer_response = client.get("/api/horoscopo", params={"signo": "Câncer"})
+    old_cancro_response = client.get("/api/horoscopo", params={"signo": "Cancro"})
 
     assert gemeos_response.status_code == 200
-    assert cancro_response.status_code == 200
+    assert cancer_response.status_code == 200
+    assert old_cancro_response.status_code == 200
     assert gemeos_response.json()["previsao_diaria"].startswith("Comunicação")
-    assert cancro_response.json()["previsao_diaria"].startswith("Emoções")
+    assert cancer_response.json()["signo"] == "Câncer"
+    assert cancer_response.json()["previsao_diaria"].startswith("Emoções")
+    assert old_cancro_response.json()["signo"] == "Câncer"

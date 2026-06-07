@@ -6,39 +6,42 @@
 - Subtitulo: Horoscopo diario por signo
 - Categoria primaria: Lifestyle
 - Preco do app: Gratis
-- Politica de privacidade: https://hypersecit.com.br/privacy
-- URL de suporte: https://hypersecit.com.br/terms
-- URL de marketing: https://hypersecit.com.br/
+- Bundle ID: `br.blog.seufuturo`
+- Politica de privacidade: https://seufuturo.blog.br/privacy
+- URL de suporte: https://seufuturo.blog.br/terms
+- URL de marketing: https://seufuturo.blog.br/
 
 ## Texto promocional
 
-Previsoes diarias por signo com leituras para amor, carreira e sorte.
+Previsao diaria gratuita para acompanhar seu signo com uma leitura simples e rapida.
 
 ## Descricao
 
-SeuFuturo ajuda voce a acompanhar seu horoscopo diario de forma simples, rapida e elegante. Escolha seu signo, leia a previsao do dia e desbloqueie conteudos mais completos com planos Premium e VIP.
+SeuFuturo ajuda voce a acompanhar seu horoscopo diario de forma simples, rapida e elegante. Escolha seu signo, leia a previsao do dia e mantenha uma conta gratuita para guardar suas preferencias.
 
 Recursos:
 
-- Horoscopo diario por signo.
-- Leituras sobre amor, carreira e sorte.
-- Conta de assinante para gerir acesso.
-- Politica de privacidade, termos e solicitacoes de dados disponiveis no app.
+- Horoscopo diario para os 12 signos.
+- Interface responsiva e focada em leitura rapida.
+- Conta gratuita para guardar o signo preferido.
+- Politica de privacidade, termos e solicitacoes LGPD disponiveis no app.
 
-As previsoes sao voltadas para entretenimento e reflexao pessoal. Elas nao substituem aconselhamento profissional.
+As previsoes sao voltadas para entretenimento e reflexao pessoal. Elas nao substituem aconselhamento medico, juridico, financeiro ou qualquer outro aconselhamento profissional.
 
 ## Palavras-chave
 
-horoscopo, signos, astrologia, zodiaco, previsao, amor, carreira, sorte
+horoscopo, signos, astrologia, zodiaco, previsao, diario, autoconhecimento
 
-## In-App Purchases sugeridos
+## App Review Notes
 
-- `seufuturo_premium_monthly`: Premium mensal.
-- `seufuturo_vip_monthly`: VIP mensal.
+Primeira versao gratuita com acesso Basic. O app nao oferece compra externa dentro do build iOS. Premium/VIP serao adicionados em versao futura apenas depois da integracao com StoreKit/In-App Purchase, se aprovados.
 
-Observacao: em app distribuido pela App Store, compras de conteudo digital dentro do app devem ser conectadas ao StoreKit/In-App Purchase antes de producao, salvo excecoes/entitlements aplicaveis.
+Conta de teste sugerida para revisao:
+
+- Email: criar durante o teste pelo fluxo "Entrar / Criar conta".
+- Senha: qualquer senha com 8 caracteres ou mais.
 
 ## Assets
 
 - Icone 1024x1024: `store/assets/app-icon-1024.png`
-- Screenshot: `store/screenshots/ios-phone-430x932.png`
+- Screenshots 1290x2796: `store/screenshots/app-store/`

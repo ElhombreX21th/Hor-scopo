@@ -57,10 +57,10 @@ RUNTIME_DIR = resolve_project_path(runtime_dir_env) if runtime_dir_env else DEFA
 os.makedirs(RUNTIME_DIR, exist_ok=True)
 
 APP_NAME = os.environ.get("APP_NAME", "SeuFuturo")
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://hypersecit.com.br").rstrip("/")
+APP_BASE_URL = os.environ.get("APP_BASE_URL", "https://seufuturo.blog.br").rstrip("/")
 ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("ALLOWED_ORIGINS", "https://hypersecit.com.br,http://127.0.0.1:8001,http://localhost:8001").split(",")
+    for origin in os.environ.get("ALLOWED_ORIGINS", "https://seufuturo.blog.br,http://127.0.0.1:8001,http://localhost:8001").split(",")
     if origin.strip()
 ]
 STRIPE_API_VERSION = os.environ.get("STRIPE_API_VERSION", "2024-06-20")
@@ -112,7 +112,7 @@ logger = logging.getLogger('seufuturo')
 # Permite que o frontend aceda ao backend sem erros de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS or ["https://hypersecit.com.br"],
+    allow_origins=ALLOWED_ORIGINS or ["https://seufuturo.blog.br"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -167,6 +167,20 @@ SIGNO_ALIASES = {
     "capricornio": "capricornio",
     "aquario": "aquario",
     "peixes": "peixes",
+}
+SIGNO_LABELS = {
+    "aries": "Aries",
+    "touro": "Touro",
+    "gemeos": "Gémeos",
+    "cancer": "Câncer",
+    "leao": "Leão",
+    "virgem": "Virgem",
+    "libra": "Libra",
+    "escorpiao": "Escorpião",
+    "sagitario": "Sagitário",
+    "capricornio": "Capricórnio",
+    "aquario": "Aquário",
+    "peixes": "Peixes",
 }
 
 
@@ -465,6 +479,10 @@ def normalizar_signo(signo: str):
     sem_acentos = unicodedata.normalize("NFKD", signo.strip().lower())
     slug = "".join(char for char in sem_acentos if not unicodedata.combining(char))
     return SIGNO_ALIASES.get(slug, slug)
+
+
+def rotulo_signo(signo: str):
+    return SIGNO_LABELS.get(normalizar_signo(signo), signo.strip().capitalize())
 
 
 def stripe_price_for_plan(plano: str):
@@ -1396,7 +1414,7 @@ async def obter_horoscopo(signo: str, plano: str = "basic", authorization: Optio
     
     # 2. Estrutura a resposta de acordo com o nível de acesso (Paywall)
     resposta = {
-        "signo": signo.capitalize(),
+        "signo": rotulo_signo(signo),
         "plano_consultado": plano_usuario,
         "previsao_diaria": dados_completos["diario"]
     }

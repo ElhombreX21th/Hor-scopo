@@ -1,0 +1,4 @@
+storeFile=C:\\Users\\Flavio\\secrets\\seufuturo-release.jks
+storePassword=CHANGE_ME
+keyAlias=seufuturo
+keyPassword=CHANGE_ME

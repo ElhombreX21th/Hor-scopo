@@ -65,7 +65,7 @@ npm install -g @capacitor/cli
 npm install @capacitor/core @capacitor/ios
 
 # Criar projeto iOS
-npx cap init seufuturo 'br.com.hypersecit.seufuturo'
+npx cap init seufuturo 'br.blog.seufuturo'
 
 # Adicionar iOS
 npx cap add ios
@@ -84,7 +84,7 @@ npx cap open ios
 npm install -g cordova
 
 # Criar projeto
-cordova create SeuFuturoApp br.com.hypersecit.seufuturo 'SeuFuturo'
+cordova create SeuFuturoApp br.blog.seufuturo 'SeuFuturo'
 
 # Adicionar plataforma iOS
 cordova platform add ios
@@ -137,7 +137,7 @@ python -m http.server 8000
 
 Ir a: https://www.pwabuilder.com/
 
-- Colar URL: `https://hypersecit.com.br`
+- Colar URL: `https://seufuturo.blog.br`
 - Seguir recomendações
 - Gerar apps para todas as plataformas
 
@@ -151,9 +151,9 @@ Ir a: https://www.pwabuilder.com/
 # ou Cloudflare Pages
 
 # Frontend deve estar em:
-https://hypersecit.com.br/
-https://hypersecit.com.br/manifest.json
-https://hypersecit.com.br/service-worker.js
+https://seufuturo.blog.br/
+https://seufuturo.blog.br/manifest.json
+https://seufuturo.blog.br/service-worker.js
 ```
 
 ### 2. Instalar Bubblewrap
@@ -176,7 +176,7 @@ cd frontend
 bubblewrap init --manifest manifest.json
 
 # Será solicitado:
-# - Package name: br.com.hypersecit.seufuturo
+# - Package name: br.blog.seufuturo
 # - App name: SeuFuturo
 # - Versão
 # - Domínio da app
@@ -218,7 +218,7 @@ bubblewrap build --release --output-format aab
 npm install @capacitor/core @capacitor/ios
 
 # 2. Criar aplicativo iOS
-npx cap init seufuturo 'br.com.hypersecit.seufuturo'
+npx cap init seufuturo 'br.blog.seufuturo'
 
 # 3. Copiar arquivos web
 cp -r frontend/* www/
@@ -285,7 +285,7 @@ npx cap open ios
 - Acesso aos dados pessoais
 
 ## Contacto
-suporte@hypersecit.com.br
+suporte@seufuturo.blog.br
 ```
 
 ### Terms of Service

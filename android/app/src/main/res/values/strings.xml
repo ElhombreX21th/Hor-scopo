@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SeuFuturo</string>
+    <string name="title_activity_main">SeuFuturo</string>
+    <string name="package_name">br.blog.seufuturo</string>
+    <string name="custom_url_scheme">br.blog.seufuturo</string>
+</resources>

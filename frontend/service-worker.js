@@ -1,8 +1,9 @@
-const CACHE_NAME = 'seufuturo-v8';
+const CACHE_NAME = 'seufuturo-v9';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/confirmacao-assinatura.html',
+  '/styles/tailwind.css',
   '/manifest.json',
   '/privacy.html',
   '/terms.html',

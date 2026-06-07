@@ -47,6 +47,11 @@ backend/data_requests.json
 # Node modules (for frontend)
 node_modules/
 
+# Store signing secrets
+android/key.properties
+*.jks
+*.keystore
+
 # OS
 .DS_Store
 Thumbs.db

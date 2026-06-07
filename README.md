@@ -1,6 +1,6 @@
 # SeuFuturo
 
-SaaS de previsões astrológicas com backend FastAPI, frontend PWA responsivo, autenticação, paywall por plano e assinatura recorrente via Stripe Checkout.
+SaaS de previsões astrológicas com backend FastAPI, frontend PWA responsivo, autenticação, paywall por plano e pagamentos via PayPal e PIX/Mercado Pago.
 
 ## Projeto Vercel Exclusivo
 
@@ -9,19 +9,19 @@ O SeuFuturo fica isolado no projeto Vercel `seufuturo-horoscopo`.
 URL pública final:
 
 ```text
-https://hypersecit.com.br
+https://seufuturo.blog.br
 ```
 
-Não use domínios ou projetos de outros produtos para este app. O domínio `hypersecit.com.br` deve ficar anexado apenas ao projeto Vercel `seufuturo-horoscopo`.
+Não use domínios ou projetos de outros produtos para este app. O domínio `seufuturo.blog.br` deve ficar anexado apenas ao projeto Vercel `seufuturo-horoscopo`.
 
 ## Estrutura
 
 ```text
 SeuFuturo/
 ├── backend/
-│   ├── main.py              # API, autenticação, paywall, Stripe e LGPD
+│   ├── main.py              # API, autenticação, paywall, pagamentos e LGPD
 │   ├── requirements.txt      # Dependências Python
-│   └── test_main.py          # Testes de auth, paywall, Stripe e signos
+│   └── test_main.py          # Testes de auth, paywall, pagamentos e signos
 ├── frontend/
 │   ├── index.html            # App PWA
 │   ├── manifest.json
@@ -34,7 +34,7 @@ SeuFuturo/
 
 ## Configuração Local
 
-1. Copia `.env.example` para `.env` e preenche as chaves Stripe.
+1. Copia `.env.example` para `.env` e preenche as chaves dos provedores de pagamento.
 
 2. Instala e executa o backend:
 
@@ -60,23 +60,25 @@ URLs locais:
 
 Obrigatórias para pagamento real:
 
-- `APP_BASE_URL`: URL pública do frontend, ex. `https://hypersecit.com.br`
-- `ALLOWED_ORIGINS`: origens CORS, ex. `https://hypersecit.com.br`
-- `STRIPE_SECRET_KEY`: chave secreta Stripe
-- `STRIPE_PRICE_PREMIUM`: ID do Price recorrente Premium
-- `STRIPE_PRICE_VIP`: ID do Price recorrente VIP
-- `STRIPE_WEBHOOK_SECRET`: segredo do webhook Stripe
+- `APP_BASE_URL`: URL pública do frontend, ex. `https://seufuturo.blog.br`
+- `ALLOWED_ORIGINS`: origens CORS, ex. `https://seufuturo.blog.br`
+- `PAYPAL_MODE`: `live` em produção ou `sandbox` em testes
+- `PAYPAL_CLIENT_ID`: client ID do PayPal
+- `PAYPAL_SECRET`: secret do PayPal
+- `PAYPAL_WEBHOOK_ID`: webhook ID do PayPal
+- `MP_ACCESS_TOKEN`: access token do Mercado Pago
+- `MP_WEBHOOK_URL`: URL pública do webhook PIX
 
 O domínio de produção configurado no projeto é:
 
 ```text
-https://hypersecit.com.br
+https://seufuturo.blog.br
 ```
 
-O webhook público deve apontar para:
+O webhook público do Mercado Pago deve apontar para:
 
 ```text
-POST https://hypersecit.com.br/api/stripe/webhook
+POST https://seufuturo.blog.br/api/mercadopago/webhook
 ```
 
 ## Deploy na Vercel
@@ -92,37 +94,32 @@ Variaveis recomendadas na Vercel:
 
 ```text
 APP_NAME=SeuFuturo
-APP_BASE_URL=https://hypersecit.com.br
-ALLOWED_ORIGINS=https://hypersecit.com.br
+APP_BASE_URL=https://seufuturo.blog.br
+ALLOWED_ORIGINS=https://seufuturo.blog.br
 ADMIN_TOKEN=<token forte>
 DATABASE_URL=<postgres_url_neon_supabase_ou_vercel_storage>
-STRIPE_SECRET_KEY=<sk_live_...>
-STRIPE_PRICE_PREMIUM=<price_...>
-STRIPE_PRICE_VIP=<price_...>
-STRIPE_WEBHOOK_SECRET=<whsec_...>
 PAYPAL_MODE=live
 PAYPAL_CLIENT_ID=<client_id>
 PAYPAL_SECRET=<secret>
 PAYPAL_WEBHOOK_ID=<webhook_id>
 MP_ACCESS_TOKEN=<mercado_pago_access_token>
-MP_WEBHOOK_URL=https://hypersecit.com.br/api/mercadopago/webhook
+MP_WEBHOOK_URL=https://seufuturo.blog.br/api/mercadopago/webhook
 ```
 
 Domínio:
 
 - Projeto Vercel: `seufuturo-horoscopo`.
-- Domínio de produção: `hypersecit.com.br`.
-- DNS necessário no provedor: `A hypersecit.com.br 76.76.21.21`.
-- DNS recomendado para `www`: `A www.hypersecit.com.br 76.76.21.21`.
+- Domínio de produção: `seufuturo.blog.br`.
+- DNS necessário no provedor: `A seufuturo.blog.br 76.76.21.21`.
+- DNS recomendado para `www`: `A www.seufuturo.blog.br 76.76.21.21`.
 - Não reutilize domínio de outro produto.
 
 Obrigatorio em producao na Vercel: configure `DATABASE_URL`, `POSTGRES_URL` ou `POSTGRES_URL_NON_POOLING` apontando para Postgres/Neon/Supabase/Vercel Storage. O backend bloqueia criacao/login de conta com `503` se estiver na Vercel usando SQLite temporario, para evitar perda de usuarios e falhas em PIX/cartao.
 
-Eventos Stripe usados:
+Pagamentos ativos no site/PWA:
 
-- `checkout.session.completed`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
+- PayPal: criação de ordem, aprovação externa e captura.
+- PIX/Mercado Pago: criação de cobrança PIX e confirmação por webhook.
 
 ## Planos
 
@@ -138,9 +135,10 @@ Eventos Stripe usados:
 - `POST /api/auth/login`
 - `GET /api/me`
 - `GET /api/horoscopo?signo=Aries&plano=basic`
-- `POST /api/checkout/session`
-- `POST /api/billing/portal`
-- `POST /api/stripe/webhook`
+- `POST /api/paypal/create-order`
+- `POST /api/paypal/capture/{order_id}`
+- `POST /api/mercadopago/create-pix`
+- `POST /api/mercadopago/webhook`
 - `POST /api/request_data_deletion`
 - `POST /api/request_data_portability`
 
@@ -153,16 +151,15 @@ pytest backend/test_main.py -q
 Cobertura atual:
 
 - Premium/VIP bloqueados sem assinatura ativa
-- Checkout Stripe cria sessão e não libera plano sozinho
-- Webhook `checkout.session.completed` libera Premium/VIP
-- Webhook de cancelamento volta o usuário para Basic
-- Customer Portal retorna URL Stripe
+- PayPal cria ordem e exige captura aprovada
+- PIX gera cobrança Mercado Pago e aguarda confirmação
+- Webhooks/eventos de pagamento controlam mudança de plano
 - Signos com acentos/nomes PT usam previsões corretas
 
 ## Checklist Antes de Publicar
 
-- Criar produtos e preços recorrentes no Stripe.
-- Configurar webhook com `STRIPE_WEBHOOK_SECRET`.
+- Configurar PayPal em produção ou sandbox.
+- Configurar Mercado Pago PIX e webhook público.
 - Hospedar backend em HTTPS.
 - Hospedar frontend em HTTPS.
 - Definir `ALLOWED_ORIGINS` com domínio final.
@@ -173,5 +170,5 @@ Cobertura atual:
 ## Notas
 
 - O backend ainda usa dados simulados de astrologia. A integração real deve substituir `buscar_dados_astrologicos`.
-- O plano pago só é ativado por webhook Stripe, não por resposta do frontend.
+- O plano pago só deve ser ativado por confirmação do provedor, não por resposta manual do frontend.
 - O endpoint antigo `/api/checkout/confirm` retorna `410` e não libera assinatura manualmente.

@@ -8,19 +8,19 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="description" content="SeuFuturo - Previsões diárias personalizadas por signo. Descobre amor, carreira e sorte com planos exclusivos.">
     <meta name="robots" content="index,follow">
-    <link rel="canonical" href="https://hypersecit.com.br/">
+    <link rel="canonical" href="https://seufuturo.blog.br/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="SeuFuturo">
     <meta property="og:title" content="SeuFuturo - Horóscopo diário por signo">
     <meta property="og:description" content="Previsões diárias para todos os signos, com leituras extras de amor, carreira e sorte.">
-    <meta property="og:url" content="https://hypersecit.com.br/">
-    <meta property="og:image" content="https://hypersecit.com.br/icons/social-card.png">
+    <meta property="og:url" content="https://seufuturo.blog.br/">
+    <meta property="og:image" content="https://seufuturo.blog.br/icons/social-card.png">
     <meta property="og:image:width" content="1024">
     <meta property="og:image:height" content="500">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SeuFuturo - Horóscopo diário por signo">
     <meta name="twitter:description" content="Previsões diárias para todos os signos, com leituras extras de amor, carreira e sorte.">
-    <meta name="twitter:image" content="https://hypersecit.com.br/icons/social-card.png">
+    <meta name="twitter:image" content="https://seufuturo.blog.br/icons/social-card.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SeuFuturo">
@@ -30,7 +30,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <title>SeuFuturo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles/tailwind.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Montserrat:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap');
         
@@ -40,12 +40,18 @@
             box-sizing: border-box;
         }
         
+        html,
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Montserrat', sans-serif;
             background: linear-gradient(135deg, #0f0c1e 0%, #1a0e2e 50%, #16213e 100%);
             min-height: 100vh;
             color: #fff;
-            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -113,6 +119,14 @@
         
         .container-main {
             animation: slideInDown 0.8s ease-out;
+            min-width: 0;
+        }
+
+        .container-main p {
+            max-width: min(100%, 38rem);
+            margin-left: auto;
+            margin-right: auto;
+            overflow-wrap: break-word;
         }
         
         .metrics-card {
@@ -134,6 +148,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            max-width: 100%;
         }
         
         .metrics-card::before {
@@ -183,6 +198,8 @@
             text-transform: capitalize;
             position: relative;
             overflow: hidden;
+            max-width: 100%;
+            overflow-wrap: anywhere;
         }
         
         .sign-card::before {
@@ -223,6 +240,7 @@
             background: rgba(255, 20, 147, 0.05);
             position: relative;
             overflow: hidden;
+            max-width: 100%;
         }
         
         .plan-card::before {
@@ -268,6 +286,8 @@
             border-radius: 20px;
             padding: 2rem;
             animation: slideInUp 0.6s ease-out;
+            max-width: 100%;
+            overflow-wrap: break-word;
         }
         
         .testimonial-card {
@@ -336,6 +356,8 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
+            max-width: 100%;
+            min-width: 0;
         }
 
         .account-title {
@@ -348,6 +370,7 @@
             color: #d8cfe3;
             font-size: 0.875rem;
             margin-top: 0.25rem;
+            overflow-wrap: break-word;
         }
 
         .soft-btn {
@@ -447,6 +470,12 @@
             color: rgba(255, 255, 255, 0.65);
             font-size: 0.82rem;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        [data-distribution="store"] #upgradeCta,
+        [data-distribution="store"] #installAppBtn,
+        [data-distribution="store"] #billingPortalBtn {
+            display: none !important;
         }
         
         .btn-premium {
@@ -548,12 +577,51 @@
         }
 
         @media (max-width: 430px) {
+            body > .min-h-screen {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            body > .min-h-screen > .max-w-6xl {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
             .gradient-title {
-                font-size: 2.15rem;
+                font-size: 2rem;
+                line-height: 1.05;
+                letter-spacing: 0;
+            }
+
+            .container-main {
+                margin-bottom: 2rem;
+            }
+
+            .container-main p {
+                max-width: 18rem;
+                font-size: 0.95rem;
+                line-height: 1.45;
+            }
+
+            .metrics-card {
+                width: 100%;
+                padding: 1.15rem;
+            }
+
+            .metric-label {
+                letter-spacing: 0.04em;
+                font-size: 0.76rem;
+            }
+
+            .account-panel .flex {
+                width: 100%;
+                flex-direction: column;
             }
 
             .account-panel .soft-btn {
-                flex-basis: 100%;
+                width: 100%;
+                flex-basis: auto;
             }
 
             .modal-backdrop {
@@ -625,7 +693,7 @@
                             <span>🔮</span>
                             <span>Escolhe o teu Signo</span>
                         </h2>
-                        <div class="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-2 gap-2 md:gap-3" id="signosContainer">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-2 gap-2 md:gap-3" id="signosContainer">
                             <!-- Populated by JavaScript -->
                         </div>
                     </div>
@@ -733,21 +801,21 @@
                     <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10">
                         <div class="text-3xl mb-3">📅</div>
                         <h3 class="text-white font-semibold text-base md:text-lg mb-2">Lê a previsão do dia</h3>
-                        <p class="text-gray-300 text-xs md:text-sm">O plano Basic libera a previsão diária. Premium e VIP adicionam leituras extras.</p>
+                        <p class="text-gray-300 text-xs md:text-sm" id="benefitPlanCopy">O plano Basic libera a previsão diária. Premium e VIP adicionam leituras extras.</p>
                     </div>
 
                     <div class="bg-white/5 backdrop-blur rounded-lg p-4 md:p-6 border border-white/10">
                         <div class="text-3xl mb-3">📲</div>
-                        <h3 class="text-white font-semibold text-base md:text-lg mb-2">Instala sem loja</h3>
-                        <p class="text-gray-300 text-xs md:text-sm">A PWA pode ser instalada pelo navegador no celular, sem App Store ou Google Play.</p>
+                        <h3 class="text-white font-semibold text-base md:text-lg mb-2" id="benefitInstallTitle">Instala sem loja</h3>
+                        <p class="text-gray-300 text-xs md:text-sm" id="benefitInstallCopy">A PWA pode ser instalada pelo navegador no celular, sem App Store ou Google Play.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Call to Action -->
-            <div class="mt-12 md:mt-16 text-center py-8 md:py-12 bg-gradient-to-r from-amber-500/10 to-pink-500/10 backdrop-blur rounded-lg border border-amber-400/20">
+            <div class="mt-12 md:mt-16 text-center py-8 md:py-12 bg-gradient-to-r from-amber-500/10 to-pink-500/10 backdrop-blur rounded-lg border border-amber-400/20" id="upgradeCta">
                 <h3 class="text-xl md:text-3xl font-bold text-white mb-3 md:mb-4 px-4">Pronto para Descobrir Teu Destino?</h3>
-                <p class="text-gray-300 mb-4 md:mb-6 px-4 text-sm md:text-base">Começa com a previsão diária gratuita e desbloqueia leituras extras quando quiser.</p>
+                <p class="text-gray-300 mb-4 md:mb-6 px-4 text-sm md:text-base" id="mainCtaCopy">Começa com a previsão diária gratuita e desbloqueia leituras extras quando quiser.</p>
                 <div class="flex flex-col md:flex-row gap-3 md:gap-4 justify-center px-4">
                     <button onclick="document.querySelector('[data-plano=\"premium\"]').click()" class="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition text-sm md:text-base">Experimentar Premium</button>
                     <button onclick="document.querySelector('[data-plano=\"vip\"]').click()" class="w-full md:w-auto px-4 md:px-6 py-2 md:py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition text-sm md:text-base">Descobrir VIP</button>
@@ -774,7 +842,7 @@
                     <option value="Aries">Aries</option>
                     <option value="Touro">Touro</option>
                     <option value="Gémeos">Gémeos</option>
-                    <option value="Cancro">Cancro</option>
+                    <option value="Câncer">Câncer</option>
                     <option value="Leão">Leão</option>
                     <option value="Virgem">Virgem</option>
                     <option value="Libra">Libra</option>
@@ -798,7 +866,7 @@
             <div class="flex items-start justify-between gap-4 mb-4">
                 <div>
                     <h2 class="modal-title" id="checkoutTitle">Ativar plano</h2>
-                    <p class="text-gray-300 text-sm" id="checkoutCopy">Serás encaminhado para o checkout seguro. Podes pagar com cartão, PayPal ou PIX.</p>
+                    <p class="text-gray-300 text-sm" id="checkoutCopy">Escolhe PayPal ou PIX para ativar o plano.</p>
                 </div>
                 <button class="soft-btn" type="button" id="closeCheckoutBtn" aria-label="Fechar">×</button>
             </div>
@@ -809,7 +877,6 @@
             </div>
             <div class="status-message mb-4" id="checkoutMessage"></div>
             <div class="grid gap-3">
-                <button class="cta-btn btn-premium w-full" type="button" id="confirmCheckoutBtn">Pagar com Cartão (Stripe)</button>
                 <button class="cta-btn soft-btn w-full" type="button" id="paypalCheckoutBtn">Pagar com PayPal</button>
                 <button class="cta-btn soft-btn w-full" type="button" id="pixCheckoutBtn">Pagar com PIX</button>
             </div>
@@ -828,7 +895,7 @@
     </footer>
 
     <script>
-        const SIGNOS = ['Aries', 'Touro', 'Gémeos', 'Cancro', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes'];
+        const SIGNOS = ['Aries', 'Touro', 'Gémeos', 'Câncer', 'Leão', 'Virgem', 'Libra', 'Escorpião', 'Sagitário', 'Capricórnio', 'Aquário', 'Peixes'];
         const PLANOS = [
             { id: 'basic', nome: 'Basic', preco: 'Grátis', descricao: 'Previsão diária', valor: '0.00' },
             { id: 'premium', nome: 'Premium', preco: 'R$ 49,90/mês', descricao: 'Amor + Carreira', valor: '49.90' },
@@ -836,10 +903,21 @@
         ];
         const PLAN_ORDER = { basic: 0, premium: 1, vip: 2 };
         const STORAGE_KEY = 'horoscopoSession';
+        const PUBLIC_APP_URL = 'https://seufuturo.blog.br';
+        const isNativeApp = Boolean(
+            window.location.protocol === 'capacitor:' ||
+            window.Capacitor?.isNativePlatform?.() ||
+            ['ios', 'android'].includes(window.Capacitor?.getPlatform?.())
+        );
+        const isStoreBuild = isNativeApp || new URLSearchParams(window.location.search).get('distribution') === 'store';
+        const activePlanos = () => isStoreBuild ? PLANOS.filter(plano => plano.id === 'basic') : PLANOS;
         const isLoopbackHost = (host) => !host || host === 'localhost' || host.startsWith('127.');
         const isLocalFrontend = ['file:', 'http:'].includes(window.location.protocol)
             && isLoopbackHost(window.location.hostname);
         const defaultApiBase = (() => {
+            if (isStoreBuild) {
+                return PUBLIC_APP_URL;
+            }
             if (window.location.protocol === 'file:') {
                 return '';
             }
@@ -869,10 +947,10 @@
 
         let sessao = carregarSessao();
         let signoSelecionado = null;
-        let planoSelecionado = sessao?.user?.plano || 'basic';
+        let planoSelecionado = isStoreBuild ? 'basic' : sessao?.user?.plano || 'basic';
         let planoPendenteUpgrade = null;
         let checkoutPlano = null;
-        let paymentConfig = { stripe: false, paypal: false, pix: false };
+        let paymentConfig = { paypal: false, pix: false };
 
         function formatApiError(detail, fallback = 'Não foi possível concluir a ação.') {
             if (!detail) return fallback;
@@ -940,11 +1018,18 @@
         }
 
         function planoInfo(planoId) {
-            return PLANOS.find(plano => plano.id === planoId) || PLANOS[0];
+            return activePlanos().find(plano => plano.id === planoId) || activePlanos()[0];
+        }
+
+        function signoCanonico(signo) {
+            if (!signo) return signo;
+            const slug = signo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            return slug === 'cancer' || slug === `can${'cro'}` ? 'Câncer' : signo;
         }
 
         function temPlano(planoId) {
             if (planoId === 'basic') return true;
+            if (isStoreBuild) return false;
             return Boolean(sessao?.user && PLAN_ORDER[sessao.user.plano] >= PLAN_ORDER[planoId]);
         }
 
@@ -964,12 +1049,12 @@
         }
 
         function provedorPagamentoAtivo(provider) {
+            if (isStoreBuild) return false;
             return Boolean(paymentConfig[provider]);
         }
 
         function atualizarCheckoutProviders() {
             const providers = [
-                ['stripe', document.getElementById('confirmCheckoutBtn')],
                 ['paypal', document.getElementById('paypalCheckoutBtn')],
                 ['pix', document.getElementById('pixCheckoutBtn')],
             ];
@@ -981,10 +1066,17 @@
                 button.setAttribute('aria-disabled', String(!enabled));
                 button.classList.toggle('opacity-50', !enabled);
                 button.classList.toggle('cursor-not-allowed', !enabled);
+                button.classList.toggle('hidden', isStoreBuild);
             });
         }
 
         async function carregarPaymentConfig() {
+            if (isStoreBuild) {
+                paymentConfig = { paypal: false, pix: false };
+                atualizarCheckoutProviders();
+                return;
+            }
+
             try {
                 const response = await apiFetch('/api/payments/config', {}, false);
                 const data = await response.json().catch(() => ({}));
@@ -992,12 +1084,11 @@
                     throw new Error(apiErrorMessage(data, 'Não foi possível verificar os meios de pagamento.'));
                 }
                 paymentConfig = {
-                    stripe: Boolean(data.stripe),
                     paypal: Boolean(data.paypal),
                     pix: Boolean(data.pix),
                 };
             } catch (error) {
-                paymentConfig = { stripe: false, paypal: false, pix: false };
+                paymentConfig = { paypal: false, pix: false };
                 console.warn('Configuração de pagamentos indisponível.', error);
             }
             atualizarCheckoutProviders();
@@ -1010,11 +1101,27 @@
             const billingPortalBtn = document.getElementById('billingPortalBtn');
             const logoutBtn = document.getElementById('logoutBtn');
 
+            if (isStoreBuild) {
+                accountTitle.textContent = 'Conta gratuita';
+                billingPortalBtn.classList.add('hidden');
+
+                if (sessao?.user) {
+                    accountStatus.textContent = `Sessao ativa para ${sessao.user.email}. A versao de loja libera a previsao diaria gratuita.`;
+                    openAuthBtn.textContent = 'Trocar conta';
+                    logoutBtn.classList.remove('hidden');
+                } else {
+                    accountStatus.textContent = 'Entra ou cria uma conta para guardar teu signo e acompanhar a previsao diaria.';
+                    openAuthBtn.textContent = 'Entrar / Criar conta';
+                    logoutBtn.classList.add('hidden');
+                }
+                return;
+            }
+
             if (sessao?.user) {
                 accountTitle.textContent = `Olá, ${sessao.user.nome}`;
                 accountStatus.textContent = `Plano ${sessao.user.plano.toUpperCase()} ativo para ${sessao.user.email}.`;
                 openAuthBtn.textContent = 'Trocar conta';
-                billingPortalBtn.classList.toggle('hidden', sessao.user.plano === 'basic');
+                billingPortalBtn.classList.add('hidden');
                 logoutBtn.classList.remove('hidden');
             } else {
                 accountTitle.textContent = 'Conta de assinante';
@@ -1036,7 +1143,7 @@
 
         function renderPlanos() {
             const container = document.getElementById('planosContainer');
-            container.innerHTML = PLANOS.map(plano => {
+            container.innerHTML = activePlanos().map(plano => {
                 const desbloqueado = temPlano(plano.id);
                 const status = plano.id === 'basic'
                     ? 'Incluído para todos'
@@ -1060,16 +1167,23 @@
         }
 
         function selecionarSigno(signo) {
-            signoSelecionado = signo;
+            signoSelecionado = signoCanonico(signo);
 
             document.querySelectorAll('[data-signo]').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.signo === signo);
+                btn.classList.toggle('selected', btn.dataset.signo === signoSelecionado);
             });
 
             buscarHoroscopo();
         }
 
         function selecionarPlano(plano) {
+            if (isStoreBuild && plano !== 'basic') {
+                planoSelecionado = 'basic';
+                atualizarPlanoSelecionado();
+                document.getElementById('accountStatus').textContent = 'Premium e VIP serao disponibilizados nas lojas quando as compras nativas estiverem configuradas.';
+                return;
+            }
+
             planoSelecionado = plano;
             atualizarPlanoSelecionado();
 
@@ -1195,10 +1309,15 @@
 
         function abrirAuthModal(planoPendente = null) {
             planoPendenteUpgrade = planoPendente && planoPendente !== 'basic' ? planoPendente : null;
-            document.getElementById('authSigno').value = signoSelecionado || sessao?.user?.signo || 'Aries';
-            document.getElementById('authSubtitle').textContent = planoPendenteUpgrade
-                ? `Entra ou cria uma conta para ativar o plano ${planoInfo(planoPendenteUpgrade).nome}.`
-                : 'Cria uma conta ou entra para gerir a tua assinatura.';
+            document.getElementById('authSigno').value = signoCanonico(signoSelecionado || sessao?.user?.signo || 'Aries');
+            if (isStoreBuild) {
+                planoPendenteUpgrade = null;
+                document.getElementById('authSubtitle').textContent = 'Cria uma conta ou entra para guardar teu signo e acompanhar a previsao diaria.';
+            } else {
+                document.getElementById('authSubtitle').textContent = planoPendenteUpgrade
+                    ? `Entra ou cria uma conta para ativar o plano ${planoInfo(planoPendenteUpgrade).nome}.`
+                    : 'Cria uma conta ou entra para gerir a tua assinatura.';
+            }
             document.getElementById('authMessage').textContent = '';
             document.getElementById('authModal').classList.remove('hidden');
         }
@@ -1254,6 +1373,11 @@
         }
 
         function abrirCheckoutModal(plano, detalhe = '') {
+            if (isStoreBuild) {
+                document.getElementById('accountStatus').textContent = 'Compras de Premium e VIP ficam indisponiveis nesta versao ate a integracao com compras nativas da loja.';
+                return;
+            }
+
             checkoutPlano = plano;
             const info = planoInfo(plano);
             document.getElementById('checkoutPlanName').textContent = info.nome;
@@ -1265,43 +1389,6 @@
 
         function fecharCheckoutModal() {
             document.getElementById('checkoutModal').classList.add('hidden');
-        }
-
-        async function confirmarCheckout() {
-            if (!checkoutPlano) return;
-            if (!provedorPagamentoAtivo('stripe')) {
-                document.getElementById('checkoutMessage').textContent = 'Cartão/Stripe não está configurado no servidor.';
-                return;
-            }
-            if (!sessao) {
-                fecharCheckoutModal();
-                abrirAuthModal(checkoutPlano);
-                return;
-            }
-
-            const message = document.getElementById('checkoutMessage');
-            message.textContent = 'A criar checkout seguro...';
-
-            try {
-                const sessionResponse = await apiFetch('/api/checkout/session', {
-                    method: 'POST',
-                    body: JSON.stringify({ plano: checkoutPlano })
-                });
-                const sessionData = await sessionResponse.json().catch(() => ({}));
-
-                if (!sessionResponse.ok) {
-                    throw new Error(apiErrorMessage(sessionData, 'Não foi possível criar checkout.'));
-                }
-
-                if (!sessionData.checkout_url) {
-                    throw new Error('Checkout criado sem URL de pagamento.');
-                }
-
-                message.textContent = 'A abrir Stripe Checkout...';
-                window.location.href = sessionData.checkout_url;
-            } catch (error) {
-                message.textContent = error.message;
-            }
         }
 
         // PayPal flow: cria ordem no backend e redireciona para aprovação
@@ -1418,26 +1505,6 @@
             }
         }
 
-        async function abrirPortalStripe() {
-            if (!sessao) {
-                abrirAuthModal();
-                return;
-            }
-
-            try {
-                const response = await apiFetch('/api/billing/portal', { method: 'POST' });
-                const data = await response.json().catch(() => ({}));
-
-                if (!response.ok) {
-                    throw new Error(apiErrorMessage(data, 'Não foi possível abrir a gestão da assinatura.'));
-                }
-
-                window.location.href = data.portal_url;
-            } catch (error) {
-                document.getElementById('accountStatus').textContent = error.message;
-            }
-        }
-
         async function sincronizarConta() {
             if (!sessao?.access_token) return;
 
@@ -1453,7 +1520,7 @@
                     return;
                 }
                 salvarSessao({ ...sessao, user: data.user });
-                planoSelecionado = data.user.plano;
+                planoSelecionado = isStoreBuild ? 'basic' : data.user.plano;
                 atualizarPlanoSelecionado();
             } catch (error) {
                 console.log('Conta não sincronizada', error);
@@ -1466,8 +1533,8 @@
                 const data = await response.json();
 
                 document.getElementById('metricaSignos').textContent = data.signos_disponiveis || '12';
-                document.getElementById('metricaPlanos').textContent = data.planos_disponiveis || '3';
-                document.getElementById('metricaPwa').textContent = data.app_instalavel ? 'PWA' : 'Web';
+                document.getElementById('metricaPlanos').textContent = isStoreBuild ? 'Basic' : data.planos_disponiveis || '3';
+                document.getElementById('metricaPwa').textContent = isStoreBuild ? 'App' : data.app_instalavel ? 'PWA' : 'Web';
             } catch (error) {
                 console.log('Métricas indisponíveis (backend offline)', error);
             }
@@ -1477,7 +1544,7 @@
             const shareData = {
                 title: 'SeuFuturo',
                 text: 'Vê teu horóscopo diário por signo no SeuFuturo.',
-                url: window.location.origin + '/'
+                url: isStoreBuild ? `${PUBLIC_APP_URL}/` : window.location.origin + '/'
             };
 
             if (navigator.share) {
@@ -1497,6 +1564,25 @@
             }
         }
 
+        function aplicarModoLoja() {
+            if (!isStoreBuild) return;
+
+            document.body.dataset.distribution = 'store';
+            document.getElementById('installAppBtn').classList.add('hidden');
+            document.getElementById('billingPortalBtn').classList.add('hidden');
+            document.getElementById('upgradeCta')?.classList.add('hidden');
+
+            const benefitPlanCopy = document.getElementById('benefitPlanCopy');
+            const benefitInstallTitle = document.getElementById('benefitInstallTitle');
+            const benefitInstallCopy = document.getElementById('benefitInstallCopy');
+            if (benefitPlanCopy) benefitPlanCopy.textContent = 'A versao de loja oferece a previsao diaria gratuita do plano Basic.';
+            if (benefitInstallTitle) benefitInstallTitle.textContent = 'Disponivel nas lojas';
+            if (benefitInstallCopy) benefitInstallCopy.textContent = 'Instale pelo app oficial distribuido pela App Store ou Google Play.';
+
+            document.getElementById('metricaPlanos').textContent = 'Basic';
+            document.getElementById('metricaPwa').textContent = 'App';
+        }
+
         document.getElementById('openAuthBtn').addEventListener('click', () => abrirAuthModal());
         document.getElementById('shareAppBtn').addEventListener('click', compartilharApp);
         document.getElementById('installAppBtn').addEventListener('click', async () => {
@@ -1507,7 +1593,6 @@
             document.getElementById('installAppBtn').classList.add('hidden');
             document.getElementById('installAppBtn').classList.add('hidden');
         });
-        document.getElementById('billingPortalBtn').addEventListener('click', abrirPortalStripe);
         document.getElementById('logoutBtn').addEventListener('click', () => {
             limparSessao();
             buscarHoroscopo();
@@ -1520,17 +1605,17 @@
             autenticar('login');
         });
         document.getElementById('closeCheckoutBtn').addEventListener('click', fecharCheckoutModal);
-        document.getElementById('confirmCheckoutBtn').addEventListener('click', confirmarCheckout);
         document.getElementById('paypalCheckoutBtn').addEventListener('click', startPayPalFromModal);
         document.getElementById('pixCheckoutBtn').addEventListener('click', startPixFromModal);
 
+        aplicarModoLoja();
         renderSignos();
         renderPlanos();
         atualizarContaUI();
         atualizarPlanoSelecionado();
         atualizarCheckoutProviders();
         carregarPaymentConfig();
-        selecionarSigno(sessao?.user?.signo || 'Aries');
+        selecionarSigno(signoCanonico(sessao?.user?.signo || 'Aries'));
         carregarMetricas();
         sincronizarConta().then(() => {
             if (new URLSearchParams(window.location.search).get('checkout') === 'success') {
@@ -1539,7 +1624,7 @@
         });
 
         // Register Service Worker for PWA
-        if ('serviceWorker' in navigator) {
+        if (!isStoreBuild && 'serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js')
                 .then((registration) => {
                     console.log('✅ Service Worker registado com sucesso');
@@ -1558,6 +1643,7 @@
         let deferredPrompt;
         const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         window.addEventListener('beforeinstallprompt', (e) => {
+            if (isStoreBuild) return;
             e.preventDefault();
             deferredPrompt = e;
             if (!isStandalone()) {

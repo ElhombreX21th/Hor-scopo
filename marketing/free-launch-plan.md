@@ -1,6 +1,6 @@
 # Plano gratuito de divulgacao - SeuFuturo
 
-URL principal: https://hypersecit.com.br/
+URL principal: https://seufuturo.blog.br/
 
 Objetivo de hoje: gerar visitas qualificadas sem pagar Apple, Google ou anuncios.
 

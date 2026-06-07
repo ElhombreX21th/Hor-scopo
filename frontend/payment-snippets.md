@@ -6,47 +6,7 @@ Observação: para endpoints que exigem autenticação, envie o header `Authoriz
 
 ---
 
-## 1) Stripe Checkout (assinaturas)
-
-Fluxo: frontend chama o endpoint do backend que cria a sessão de checkout e recebe `checkout_url` ou `stripe_session_id`.
-
-Exemplo (fetch + redirecionamento):
-
-```javascript
-async function startStripeCheckout(plano, token) {
-  const res = await fetch('/api/checkout/session', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-    },
-    body: JSON.stringify({ plano })
-  });
-
-  if (!res.ok) {
-    const err = await res.json();
-    alert('Erro: ' + err.detail);
-    return;
-  }
-
-  const data = await res.json();
-  // Backend retorna checkout_url (melhor para redirecionar)
-  if (data.checkout_url) {
-    window.location = data.checkout_url;
-    return;
-  }
-
-  // Ou usar Stripe.js com sessionId
-  if (data.stripe_session_id) {
-    const stripe = Stripe('pk_test_SEU_PUBLISHABLE_KEY'); // substitua
-    await stripe.redirectToCheckout({ sessionId: data.stripe_session_id });
-  }
-}
-```
-
----
-
-## 2) PayPal (redirect flow usando o backend)
+## 1) PayPal (redirect flow usando o backend)
 
 Fluxo: frontend pede ao backend para criar a ordem; o backend devolve links (incl. `approve`) — redireciona para aprovação; depois captura.
 
@@ -111,7 +71,7 @@ paypal.Buttons({
 
 ---
 
-## 3) PIX via Mercado Pago (exibir QR Code retornado pelo backend)
+## 2) PIX via Mercado Pago (exibir QR Code retornado pelo backend)
 
 Fluxo: frontend chama `/api/mercadopago/create-pix` com `plano` e token do usuário autenticado. O backend escolhe o preço oficial do plano e retorna `qr_code` e `qr_code_base64`.
 
@@ -150,7 +110,7 @@ async function startPix(plano, accessToken) {
 ---
 
 ## Headers e notas de segurança
-- Para endpoints que alteram estado (criar sessão Stripe, /api/checkout/session), use `Authorization: Bearer <TOKEN>`.
+- Para endpoints que alteram estado, use `Authorization: Bearer <TOKEN>`.
 - Sempre use HTTPS em produção.
 - Valide respostas e trate erros (timeouts, 4xx/5xx).
 
