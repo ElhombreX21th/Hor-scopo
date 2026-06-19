@@ -1,0 +1,10 @@
+name: Android Clone
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: git clone https://github.com/ElhombreX21th/Hor-scopo.git app
