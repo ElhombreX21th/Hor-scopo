@@ -1,4 +1,4 @@
-name: Android AAB
+name: Build Android AAB
 
 on:
   workflow_dispatch:
@@ -7,4 +7,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo Android AAB workflow placeholder
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+      - name: Build Android AAB
+        run: bash scripts/build-android-twa.sh
+      - name: Collect output
+        run: |
+          mkdir -p dist
+          find android-twa-build -name '*.aab' -exec cp {} dist/ \;
+          find android-twa-build -name '*.apk' -exec cp {} dist/ \; || true
+          find android-twa-build -name 'assetlinks.json' -exec cp {} dist/ \; || true
+          ls -la dist
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: seufuturo-android-aab
+          path: dist
+          if-no-files-found: error
